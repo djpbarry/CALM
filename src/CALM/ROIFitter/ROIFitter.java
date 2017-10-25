@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package CALM_.ROIFitter;
+package CALM.ROIFitter;
 
 import Image.ImageNormaliser;
-import Optimisation.RoiFitter;
+import Math.Optimisation.RoiFitter;
 import UtilClasses.GenUtils;
 import ij.IJ;
 import ij.ImagePlus;
@@ -23,17 +23,17 @@ import java.awt.Color;
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
-public class ROI_Fitter implements PlugIn {
+public class ROIFitter implements PlugIn {
 
     private final String title = "ROI Fitter";
 //    private static boolean ring = false;
 
     public static void main(String[] args) {
-        (new ROI_Fitter()).run(null);
+        (new ROIFitter()).run(null);
         System.exit(0);
     }
 
-    public ROI_Fitter() {
+    public ROIFitter() {
 
     }
 
