@@ -57,7 +57,7 @@ public class BALM_Analysis extends GPUAnalyse {
     public void run(String arg) {
         MacroWriter.write();
         File inputDir = null;
-        title = title + "_v" + Revision.VERSION + "." + intFormat.format(Revision.revisionNumber);
+        title = "BALM Analysis_v" + Revision.VERSION + "." + intFormat.format(Revision.revisionNumber);
         inputs = new ImagePlus[2];
         if (IJ.getInstance() != null) {
             if (!getActiveImages(false)) {
