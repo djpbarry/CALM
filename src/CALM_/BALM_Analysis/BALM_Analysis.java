@@ -43,14 +43,14 @@ import ui.DetectionGUI;
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
-public class FLAP_ extends GPUAnalyse {
+public class BALM_Analysis extends GPUAnalyse {
 
     private final String RESULTS_HEADINGS = String.format("X\tY\tFrame\tChannel 1\tChannel 2\tChannel 1 %c\tChannel 2 %c", '\u03C3', '\u03C3');
 //    private final int MIN_CLUSTER_RANGE = 2, MAX_CLUSTER_RANGE = 8;
 //    private final double VAR_THRESH = 5.0;
     private double[][] gaussKernel;
 
-    public FLAP_() {
+    public BALM_Analysis() {
         super();
     }
 
