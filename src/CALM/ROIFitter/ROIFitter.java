@@ -51,7 +51,7 @@ public class ROIFitter implements PlugIn {
 //        if (!showDialog()) {
 //            return;
 //        }
-        FloatProcessor ip = ImageNormaliser.normaliseImage(imp.getProcessor());
+        FloatProcessor ip = ImageNormaliser.normaliseImage(imp.getProcessor(), 1.0);
         int width = ip.getWidth();
         int height = ip.getHeight();
         float[] pix = (float[]) ip.getPixels();

@@ -96,7 +96,7 @@ public class BALM_Analysis extends GPUAnalyse {
         ParticleArray particles = duplicateDetections(c1Particles, nC2);
         detectParticles(0, 0, particles, false, false, UserVariables.getCurveFitTol(), stacks[1]);
         TrajectoryBuilder.updateTrajectories(particles, UserVariables.getTimeRes(), UserVariables.getTrajMaxStep(),
-                UserVariables.getSpatialRes(), false, Utils.getStackMinMax(inputs[0].getImageStack())[1], trajectories, false);
+                UserVariables.getSpatialRes(), Utils.getStackMinMax(inputs[0].getImageStack())[1], trajectories, false);
         TextWindow results = new TextWindow(title + " Results", RESULTS_HEADINGS,
                 new String(), 1000, 500);
         int n = trajectories.size();
