@@ -16,7 +16,7 @@ import ij.gui.Roi;
 import ij.plugin.PlugIn;
 import ij.plugin.frame.RoiManager;
 import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
 import java.awt.Color;
 
 /**
@@ -51,7 +51,7 @@ public class ROIFitter implements PlugIn {
 //        if (!showDialog()) {
 //            return;
 //        }
-        FloatProcessor ip = ImageNormaliser.normaliseImage(imp.getProcessor(), 1.0);
+        ImageProcessor ip = ImageNormaliser.normaliseImage(imp.getProcessor(), 1.0, ImageNormaliser.FLOAT);
         int width = ip.getWidth();
         int height = ip.getHeight();
         float[] pix = (float[]) ip.getPixels();
