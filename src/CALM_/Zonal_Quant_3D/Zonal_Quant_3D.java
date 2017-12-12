@@ -15,7 +15,7 @@ import ij.plugin.PlugIn;
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
-public class Voronoi_Quant3D implements PlugIn {
+public class Zonal_Quant_3D implements PlugIn {
 
     /**
      * @param args the command line arguments
@@ -25,7 +25,7 @@ public class Voronoi_Quant3D implements PlugIn {
 //        System.exit(0);
 //    }
 
-    public Voronoi_Quant3D() {
+    public Zonal_Quant_3D() {
 
     }
 
