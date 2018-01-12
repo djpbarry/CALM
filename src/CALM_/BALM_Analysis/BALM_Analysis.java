@@ -18,7 +18,6 @@ package CALM_.BALM_Analysis;
 
 import IAClasses.Utils;
 import IO.DataWriter;
-import MacroWriter.MacroWriter;
 import Particle.IsoGaussian;
 import Particle.Particle;
 import Particle.ParticleArray;
@@ -55,7 +54,7 @@ public class BALM_Analysis extends GPUAnalyse {
     }
 
     public void run(String arg) {
-        MacroWriter.write();
+//        MacroWriter.write();
         File inputDir = null;
         title = "BALM Analysis_v" + Revision.VERSION + "." + intFormat.format(Revision.revisionNumber);
         inputs = new ImagePlus[2];
