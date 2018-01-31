@@ -81,9 +81,14 @@ public class BALM_Analysis extends GPUAnalyse {
 
     }
 
-    public void analyse(File inputDir) throws Exception {
+    public void analyse(File inputDir) {
         ImageStack[] stacks = getStacks();
-        File outputDir = Utilities.getFolder(inputDir, "Specify directory for output files...", true);
+        File outputDir = null;
+        try {
+            outputDir = Utilities.getFolder(inputDir, "Specify directory for output files...", true);
+        } catch (Exception e) {
+            IJ.log("Failed to generate output directory.");
+        }
         String parentDir = GenUtils.openResultsDirectory(outputDir + delimiter + title);
         if (stacks == null) {
             return;
@@ -111,9 +116,13 @@ public class BALM_Analysis extends GPUAnalyse {
                     UserVariables.getTimeRes(), true, 0, trajectories.size() - 1, 1, false, calcParticleRadius(UserVariables.getSpatialRes(), UserVariables.getSigEstRed()));
             results.append("\nAnalysis Time (s): " + numFormat.format((System.currentTimeMillis() - startTime) / 1000.0));
             results.setVisible(true);
-            DataWriter.saveTextWindow(results, new File(String.format("%s%s%s", parentDir, File.separator, "results.csv")), RESULTS_HEADINGS);
             double[][] fluorVals = extractFluorVals(trajectories, stacks[1].size());
-            DataWriter.saveValues(fluorVals, new File(String.format("%s%s%s", parentDir, File.separator, "fluorVals.csv")), makeFluorHeadings(), null);
+            try {
+                DataWriter.saveTextWindow(results, new File(String.format("%s%s%s", parentDir, File.separator, "results.csv")), RESULTS_HEADINGS);
+                DataWriter.saveValues(fluorVals, new File(String.format("%s%s%s", parentDir, File.separator, "fluorVals.csv")), makeFluorHeadings(), null);
+            } catch (Exception e) {
+                IJ.log("Failed to generate results files.");
+            }
 //            double[][] fluorAnalysis = analyseFluorVals(fluorVals, GenUtils.createDirectory(String.format("%s%s%s", parentDir, File.separator, "Plots"), false));
 //            DataWriter.saveValues(fluorAnalysis, new File(String.format("%s%s%s", parentDir, File.separator, "fluorAnalysis.csv")), makeFluorAnalysisHeadings(), null);
 //            try {
@@ -151,7 +160,6 @@ public class BALM_Analysis extends GPUAnalyse {
 //        }
 //        return headings;
 //    }
-
     protected ParticleArray findC1Particles() {
         ImageStack[] stacks = getStacks();
         if (UserVariables.isGpu()) {
