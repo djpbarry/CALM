@@ -28,10 +28,10 @@ public class ROIFitter implements PlugIn {
     private final String title = "ROI Fitter";
 //    private static boolean ring = false;
 
-    public static void main(String[] args) {
-        (new ROIFitter()).run(null);
-        System.exit(0);
-    }
+//    public static void main(String[] args) {
+//        (new ROIFitter()).run(null);
+//        System.exit(0);
+//    }
 
     public ROIFitter() {
 

@@ -119,7 +119,7 @@ public class BALM_Analysis extends GPUAnalyse {
             double[][] fluorVals = extractFluorVals(trajectories, stacks[1].size());
             try {
                 DataWriter.saveTextWindow(results, new File(String.format("%s%s%s", parentDir, File.separator, "results.csv")), RESULTS_HEADINGS);
-                DataWriter.saveValues(fluorVals, new File(String.format("%s%s%s", parentDir, File.separator, "fluorVals.csv")), makeFluorHeadings(), null);
+                DataWriter.saveValues(fluorVals, new File(String.format("%s%s%s", parentDir, File.separator, "fluorVals.csv")), makeFluorHeadings(), null, false);
             } catch (Exception e) {
                 IJ.log("Failed to generate results files.");
             }
