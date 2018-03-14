@@ -24,7 +24,6 @@ public class Zonal_Quant_3D implements PlugIn {
 //        (new Voronoi_Quant3D()).run(null);
 //        System.exit(0);
 //    }
-
     public Zonal_Quant_3D() {
 
     }
@@ -32,7 +31,7 @@ public class Zonal_Quant_3D implements PlugIn {
     public void run(String arg) {
         ImagePlus voronoi = IJ.openImage((new OpenDialog("Specify Voronoi Image", null)).getPath());
         ImagePlus sig = IJ.openImage((new OpenDialog("Specify Signal Image", null)).getPath());
-        (new Analyser()).analyse(voronoi, sig);
+        (new Analyser()).analyse(voronoi, sig, voronoi.getOriginalFileInfo().directory);
     }
 
 }
