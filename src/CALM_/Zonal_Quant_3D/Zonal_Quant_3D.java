@@ -5,7 +5,7 @@
  */
 package CALM_.Zonal_Quant_3D;
 
-import VoronoiQuant3D.Analyser;
+import BrainQuant3D.Analyser;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.io.OpenDialog;
