@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
@@ -39,30 +40,38 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  */
 public class Trajectory_Analyser {
 
-    private File inputFile;
+    private File inputFile = new File("D:\\OneDrive - The Francis Crick Institute\\Working Data\\Ultanir\\TrkB\\Manual tracking");
     private double minVel = 0.01;
+    private double minDist = 1.0;
     private double timeRes = 1.0;
-    private final int X_INDEX = 0, Y_INDEX = 1;
+    private int X_INDEX, Y_INDEX, ID_INDEX;
     private final String TITLE = "Trajectory Analysis";
     private final String MIC_PER_SEC = String.format("%cm/s", IJ.micronSymbol);
+    private LinkedHashMap<Integer, Integer> idIndexMap;
 
     public Trajectory_Analyser() {
 
     }
+//D:\OneDrive - The Francis Crick Institute\Working Data\Ultanir\TrkB\Manual tracking
 
     public void run() {
         double[][][] data;
+        double[][] inputData;
+        ArrayList<String> headings = new ArrayList();
+        ArrayList<String> labels = new ArrayList();
         try {
             inputFile = Utilities.getFile(inputFile, "Select input file", true);
-            data = DataReader.readTabbedFile(inputFile);
+            inputData = DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, headings, labels);
         } catch (Exception e) {
             GenUtils.error("Cannot read input file.");
             return;
         }
-        if (!showDialog()) {
+        String[] headingsArray = new String[headings.size()];
+        headingsArray = headings.toArray(headingsArray);
+        if (!showDialog(headingsArray)) {
             return;
         }
-        double[][][] vels = calcInstVels(data);
+        double[][][] vels = calcInstVels(processData(inputData), 0, 1);
         double[][] meanVels = calcMeanVels(vels, minVel);
         double[][][] runLengths = calcRunLengths(vels, minVel);
         try {
@@ -73,7 +82,43 @@ public class Trajectory_Analyser {
         }
     }
 
-    double[][][] calcInstVels(double[][][] data) {
+    double[][][] processData(double[][] inputData) {
+        int count = 1;
+        int id = (int) Math.round(inputData[0][ID_INDEX]);
+        ArrayList<Integer> lengths = new ArrayList();
+        int l = 0;
+        idIndexMap = new LinkedHashMap();
+        for (int i = 0; i < inputData.length; i++) {
+            if (inputData[i][ID_INDEX] > id) {
+                id = (int) Math.round(inputData[i][ID_INDEX]);
+                count++;
+                lengths.add(l);
+                l = 0;
+            }
+            l++;
+        }
+        lengths.add(l);
+        double[][][] output = new double[count][][];
+        output[0] = new double[lengths.get(0)][3];
+        id = (int) Math.round(inputData[0][ID_INDEX]);
+        idIndexMap.put(0, id);
+        for (int j = 0, k = 0, index = 0; j < inputData.length; j++) {
+            if (inputData[j][ID_INDEX] > id) {
+                id = (int) Math.round(inputData[j][ID_INDEX]);
+                k++;
+                index = 0;
+                output[k] = new double[lengths.get(k)][3];
+                idIndexMap.put(k, id);
+            }
+            output[k][index][0] = inputData[j][X_INDEX];
+            output[k][index][1] = inputData[j][Y_INDEX];
+            output[k][index][2] = inputData[j][ID_INDEX];
+            index++;
+        }
+        return output;
+    }
+
+    double[][][] calcInstVels(double[][][] data, int X_INDEX, int Y_INDEX) {
         int a = data.length;
         double[][][] vels = new double[a][][];
         for (int i = 0; i < a; i++) {
@@ -167,20 +212,29 @@ public class Trajectory_Analyser {
         double meanY = yVel.getMean();
         double mag = Math.sqrt(Math.pow(meanX, 2.0) + Math.pow(meanY, 2.0));
         double theta = Utils.arcTan(meanX, meanY);
-        current.add(new double[]{mag, theta, xVel.getN()});
+        int N = (int) xVel.getN();
+        double dist = Utils.calcDistance(xVel.getElement(0), yVel.getElement(0), xVel.getElement(N - 1), yVel.getElement(N - 1));
+        if (dist > minDist) {
+            current.add(new double[]{mag, theta, dist, xVel.getN()});
+        }
     }
 
     void saveVelData(double[][][] vels) throws IOException {
         File dir = inputFile.getParentFile();
-        File velData = new File(String.format("%s%s%s", dir, File.separator, "Instantaneous_Velocities.csv"));
-        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velData), GenVariables.ISO), CSVFormat.EXCEL);
-        printer.printRecord(((Object[]) new String[]{String.format("X Vel (%s)", MIC_PER_SEC),
+        File velFile = new File(String.format("%s%s%s", dir, File.separator, "Instantaneous_Velocities.csv"));
+        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velFile), GenVariables.ISO), CSVFormat.EXCEL);
+        printer.printRecord(((Object[]) new String[]{"Track ID",
+            String.format("X Vel (%s)", MIC_PER_SEC),
             String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
             String.format("Theta (%c)", IJ.degreeSymbol)}));
         printer.close();
         for (int i = 0; i < vels.length; i++) {
             double[][] v = vels[i];
-            DataWriter.saveValues(v, velData, new String[]{String.format("Particle %d", i)}, null, true);
+            String[] rowLabels = new String[v.length];
+            for (int j = 0; j < v.length; j++) {
+                rowLabels[j] = String.valueOf(idIndexMap.get(i));
+            }
+            DataWriter.saveValues(v, velFile, null, rowLabels, true);
         }
     }
 
@@ -189,33 +243,45 @@ public class Trajectory_Analyser {
         File velData = new File(String.format("%s%s%s", dir, File.separator, "Mean_Velocities.csv"));
         String[] rowLabels = new String[meanVels.length];
         for (int i = 0; i < meanVels.length; i++) {
-            rowLabels[i] = String.format("Particle %d", i);
+            rowLabels[i] = String.valueOf(idIndexMap.get(i));
         }
-        DataWriter.saveValues(meanVels, velData, new String[]{String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol)}, rowLabels, false);
+        DataWriter.saveValues(meanVels, velData, new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol)}, rowLabels, false);
     }
 
     void saveRunLengths(double[][][] runs) throws IOException {
         File dir = inputFile.getParentFile();
         File velData = new File(String.format("%s%s%s", dir, File.separator, "Run_Lengths.csv"));
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velData), GenVariables.ISO), CSVFormat.EXCEL);
-        printer.printRecord(((Object[]) new String[]{String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "No. of Frames"}));
+        printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "No. of Frames"}));
         printer.close();
         for (int i = 0; i < runs.length; i++) {
             double[][] v = runs[i];
-            DataWriter.saveValues(v, velData, new String[]{String.format("Particle %d", i)}, null, true);
+            String[] rowLabels = new String[v.length];
+            for (int j = 0; j < v.length; j++) {
+                rowLabels[j] = String.valueOf(idIndexMap.get(i));
+            }
+            DataWriter.saveValues(v, velData, null, rowLabels, true);
         }
     }
 
-    boolean showDialog() {
+    boolean showDialog(String[] headings) {
         GenericDialog gd = new GenericDialog(TITLE);
         gd.addNumericField("Minimum Velocity", minVel, 3, 5, MIC_PER_SEC);
+        gd.addNumericField("Minimum Distance", minDist, 3, 5, "");
         gd.addNumericField("Temporal Resolution", timeRes, 3, 5, "Hz");
+        gd.addChoice("Specify Column for X coordinates:", headings, headings[0]);
+        gd.addChoice("Specify Column for Y coordinates:", headings, headings[1]);
+        gd.addChoice("Specify Column for Track ID:", headings, headings[2]);
         gd.showDialog();
         if (!gd.wasOKed()) {
             return false;
         }
         minVel = gd.getNextNumber();
+        minDist = gd.getNextNumber();
         timeRes = gd.getNextNumber();
+        X_INDEX = gd.getNextChoiceIndex();
+        Y_INDEX = gd.getNextChoiceIndex();
+        ID_INDEX = gd.getNextChoiceIndex();
         return true;
     }
 }

@@ -1,5 +1,5 @@
 
-import CALM_.Zonal_Quant_3D.Zonal_Quant_3D;
+import CALM_.Trajectory_Analysis.Trajectory_Analyser;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -13,7 +13,7 @@ import CALM_.Zonal_Quant_3D.Zonal_Quant_3D;
 public class Main {
 
     public static void main(String args[]) {
-        (new Zonal_Quant_3D()).run(null);
+        (new Trajectory_Analyser()).run();
         System.exit(0);
     }
 }
