@@ -222,6 +222,9 @@ public class Trajectory_Analyser {
     void saveVelData(double[][][] vels) throws IOException {
         File dir = inputFile.getParentFile();
         File velFile = new File(String.format("%s%s%s", dir, File.separator, "Instantaneous_Velocities.csv"));
+        if (velFile.exists()) {
+            velFile.delete();
+        }
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velFile), GenVariables.ISO), CSVFormat.EXCEL);
         printer.printRecord(((Object[]) new String[]{"Track ID",
             String.format("X Vel (%s)", MIC_PER_SEC),
@@ -241,6 +244,9 @@ public class Trajectory_Analyser {
     void saveMeanVels(double[][] meanVels) throws IOException {
         File dir = inputFile.getParentFile();
         File velData = new File(String.format("%s%s%s", dir, File.separator, "Mean_Velocities.csv"));
+        if (velData.exists()) {
+            velData.delete();
+        }
         String[] rowLabels = new String[meanVels.length];
         for (int i = 0; i < meanVels.length; i++) {
             rowLabels[i] = String.valueOf(idIndexMap.get(i));
@@ -251,6 +257,9 @@ public class Trajectory_Analyser {
     void saveRunLengths(double[][][] runs) throws IOException {
         File dir = inputFile.getParentFile();
         File velData = new File(String.format("%s%s%s", dir, File.separator, "Run_Lengths.csv"));
+        if (velData.exists()) {
+            velData.delete();
+        }
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velData), GenVariables.ISO), CSVFormat.EXCEL);
         printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "No. of Frames"}));
         printer.close();
