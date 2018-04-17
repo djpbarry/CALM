@@ -24,6 +24,7 @@ import UtilClasses.GenVariables;
 import UtilClasses.Utilities;
 import ij.IJ;
 import ij.gui.GenericDialog;
+import ij.plugin.PlugIn;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,13 +39,15 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class Trajectory_Analyser {
+public class Trajectory_Analyser implements PlugIn {
 
     private File inputFile = new File("D:\\OneDrive - The Francis Crick Institute\\Working Data\\Ultanir\\TrkB\\Manual tracking");
     private double minVel = 0.01;
     private double minDist = 1.0;
-    private double timeRes = 1.0;
-    private int X_INDEX, Y_INDEX, ID_INDEX;
+    private double framesPerSec = 1.0;
+    private static int INPUT_X_INDEX = 4, INPUT_Y_INDEX = 5, INPUT_ID_INDEX = 2, INPUT_FRAME_INDEX = 8;
+     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
+      private final int V_X = 0, V_Y = 1, V_M = 2, V_Th = 3, V_T = 4;
     private final String TITLE = "Trajectory Analysis";
     private final String MIC_PER_SEC = String.format("%cm/s", IJ.micronSymbol);
     private LinkedHashMap<Integer, Integer> idIndexMap;
@@ -54,8 +57,7 @@ public class Trajectory_Analyser {
     }
 //D:\OneDrive - The Francis Crick Institute\Working Data\Ultanir\TrkB\Manual tracking
 
-    public void run() {
-        double[][][] data;
+    public void run(String args) {
         double[][] inputData;
         ArrayList<String> headings = new ArrayList();
         ArrayList<String> labels = new ArrayList();
@@ -71,7 +73,7 @@ public class Trajectory_Analyser {
         if (!showDialog(headingsArray)) {
             return;
         }
-        double[][][] vels = calcInstVels(processData(inputData), 0, 1);
+        double[][][] vels = calcInstVels(processData(inputData), _X_, _Y_, _T_);
         double[][] meanVels = calcMeanVels(vels, minVel);
         double[][][] runLengths = calcRunLengths(vels, minVel);
         try {
@@ -84,13 +86,13 @@ public class Trajectory_Analyser {
 
     double[][][] processData(double[][] inputData) {
         int count = 1;
-        int id = (int) Math.round(inputData[0][ID_INDEX]);
+        int id = (int) Math.round(inputData[0][INPUT_ID_INDEX]);
         ArrayList<Integer> lengths = new ArrayList();
         int l = 0;
         idIndexMap = new LinkedHashMap();
         for (int i = 0; i < inputData.length; i++) {
-            if (inputData[i][ID_INDEX] > id) {
-                id = (int) Math.round(inputData[i][ID_INDEX]);
+            if (inputData[i][INPUT_ID_INDEX] > id) {
+                id = (int) Math.round(inputData[i][INPUT_ID_INDEX]);
                 count++;
                 lengths.add(l);
                 l = 0;
@@ -99,40 +101,44 @@ public class Trajectory_Analyser {
         }
         lengths.add(l);
         double[][][] output = new double[count][][];
-        output[0] = new double[lengths.get(0)][3];
-        id = (int) Math.round(inputData[0][ID_INDEX]);
+        output[0] = new double[lengths.get(0)][4];
+        id = (int) Math.round(inputData[0][INPUT_ID_INDEX]);
         idIndexMap.put(0, id);
         for (int j = 0, k = 0, index = 0; j < inputData.length; j++) {
-            if (inputData[j][ID_INDEX] > id) {
-                id = (int) Math.round(inputData[j][ID_INDEX]);
+            if (inputData[j][INPUT_ID_INDEX] > id) {
+                id = (int) Math.round(inputData[j][INPUT_ID_INDEX]);
                 k++;
                 index = 0;
-                output[k] = new double[lengths.get(k)][3];
+                output[k] = new double[lengths.get(k)][4];
                 idIndexMap.put(k, id);
             }
-            output[k][index][0] = inputData[j][X_INDEX];
-            output[k][index][1] = inputData[j][Y_INDEX];
-            output[k][index][2] = inputData[j][ID_INDEX];
+            output[k][index][_X_] = inputData[j][INPUT_X_INDEX];
+            output[k][index][_Y_] = inputData[j][INPUT_Y_INDEX];
+            output[k][index][_T_] = inputData[j][INPUT_FRAME_INDEX];
+            output[k][index][_ID_] = inputData[j][INPUT_ID_INDEX];
             index++;
         }
         return output;
     }
 
-    double[][][] calcInstVels(double[][][] data, int X_INDEX, int Y_INDEX) {
+    double[][][] calcInstVels(double[][][] data, int X_INDEX, int Y_INDEX, int FRAME_INDEX) {
         int a = data.length;
         double[][][] vels = new double[a][][];
         for (int i = 0; i < a; i++) {
             int b = data[i].length;
-            vels[i] = new double[b - 1][4];
+            vels[i] = new double[b - 1][5];
             for (int j = 1; j < b; j++) {
                 double x2 = data[i][j][X_INDEX];
                 double x1 = data[i][j - 1][X_INDEX];
                 double y2 = data[i][j][Y_INDEX];
                 double y1 = data[i][j - 1][Y_INDEX];
-                vels[i][j - 1][0] = (x2 - x1) / timeRes;
-                vels[i][j - 1][1] = (y2 - y1) / timeRes;
-                vels[i][j - 1][2] = Utils.calcDistance(x1, y1, x2, y2) / timeRes;
-                vels[i][j - 1][3] = Utils.arcTan(x2 - x1, y2 - y1);
+                double t2 = data[i][j][FRAME_INDEX] / framesPerSec;
+                double t1 = data[i][j - 1][FRAME_INDEX] / framesPerSec;
+                vels[i][j - 1][V_X] = (x2 - x1) / (t2 - t1);
+                vels[i][j - 1][V_Y] = (y2 - y1) / (t2 - t1);
+                vels[i][j - 1][V_M] = Utils.calcDistance(x1, y1, x2, y2) / (t2 - t1);
+                vels[i][j - 1][V_Th] = Utils.arcTan(x2 - x1, y2 - y1);
+                vels[i][j - 1][V_T] = t2 - t1;
             }
         }
         return vels;
@@ -146,10 +152,10 @@ public class Trajectory_Analyser {
             DescriptiveStatistics xVel = new DescriptiveStatistics();
             DescriptiveStatistics yVel = new DescriptiveStatistics();
             for (int j = 0; j < b; j++) {
-                double mag = Math.sqrt(Math.pow(vels[i][j][0], 2.0) + Math.pow(vels[i][j][1], 2.0));
-                if (mag > minVel) {
-                    xVel.addValue(vels[i][j][0]);
-                    yVel.addValue(vels[i][j][1]);
+//                double mag = Math.sqrt(Math.pow(vels[i][j][0], 2.0) + Math.pow(vels[i][j][1], 2.0));
+                if (vels[i][j][V_M] > minVel) {
+                    xVel.addValue(vels[i][j][_X_]);
+                    yVel.addValue(vels[i][j][_Y_]);
                 }
             }
             double meanX = xVel.getMean();
@@ -170,23 +176,27 @@ public class Trajectory_Analyser {
             int b = vels[i].length;
             DescriptiveStatistics xVel = null;
             DescriptiveStatistics yVel = null;
+            double time = 0.0;
             for (int j = 0; j < b; j++) {
-                double mag = Math.sqrt(Math.pow(vels[i][j][0], 2.0) + Math.pow(vels[i][j][1], 2.0));
-                if (mag >= minVel) {
+//                double mag = Math.sqrt(Math.pow(vels[i][j][0], 2.0) + Math.pow(vels[i][j][1], 2.0));
+                if (vels[i][j][V_M] >= minVel) {
                     if (xVel == null) {
                         xVel = new DescriptiveStatistics();
                         yVel = new DescriptiveStatistics();
+                        time = 0.0;
                     }
-                    xVel.addValue(vels[i][j][0]);
-                    yVel.addValue(vels[i][j][1]);
+                    xVel.addValue(vels[i][j][V_X]);
+                    yVel.addValue(vels[i][j][V_Y]);
+                    time += vels[i][j][V_T];
                 } else if (xVel != null) {
-                    addRun(xVel, yVel, current);
+                    addRun(xVel, yVel, time, current);
                     xVel = null;
                     yVel = null;
+                    time = 0.0;
                 }
             }
             if (xVel != null) {
-                addRun(xVel, yVel, current);
+                addRun(xVel, yVel, time, current);
             }
             runs.add(current);
         }
@@ -207,7 +217,7 @@ public class Trajectory_Analyser {
         return output;
     }
 
-    private void addRun(DescriptiveStatistics xVel, DescriptiveStatistics yVel, ArrayList<double[]> current) {
+    private void addRun(DescriptiveStatistics xVel, DescriptiveStatistics yVel, double time, ArrayList<double[]> current) {
         double meanX = xVel.getMean();
         double meanY = yVel.getMean();
         double mag = Math.sqrt(Math.pow(meanX, 2.0) + Math.pow(meanY, 2.0));
@@ -215,7 +225,7 @@ public class Trajectory_Analyser {
         int N = (int) xVel.getN();
         double dist = Utils.calcDistance(xVel.getElement(0), yVel.getElement(0), xVel.getElement(N - 1), yVel.getElement(N - 1));
         if (dist > minDist) {
-            current.add(new double[]{mag, theta, dist, xVel.getN()});
+            current.add(new double[]{mag, theta, dist, time});
         }
     }
 
@@ -229,7 +239,8 @@ public class Trajectory_Analyser {
         printer.printRecord(((Object[]) new String[]{"Track ID",
             String.format("X Vel (%s)", MIC_PER_SEC),
             String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
-            String.format("Theta (%c)", IJ.degreeSymbol)}));
+            String.format("Theta (%c)", IJ.degreeSymbol),
+            "Time (s)"}));
         printer.close();
         for (int i = 0; i < vels.length; i++) {
             double[][] v = vels[i];
@@ -261,7 +272,7 @@ public class Trajectory_Analyser {
             velData.delete();
         }
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velData), GenVariables.ISO), CSVFormat.EXCEL);
-        printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "No. of Frames"}));
+        printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "Duration (s)"}));
         printer.close();
         for (int i = 0; i < runs.length; i++) {
             double[][] v = runs[i];
@@ -277,20 +288,22 @@ public class Trajectory_Analyser {
         GenericDialog gd = new GenericDialog(TITLE);
         gd.addNumericField("Minimum Velocity", minVel, 3, 5, MIC_PER_SEC);
         gd.addNumericField("Minimum Distance", minDist, 3, 5, "");
-        gd.addNumericField("Temporal Resolution", timeRes, 3, 5, "Hz");
-        gd.addChoice("Specify Column for X coordinates:", headings, headings[0]);
-        gd.addChoice("Specify Column for Y coordinates:", headings, headings[1]);
-        gd.addChoice("Specify Column for Track ID:", headings, headings[2]);
+        gd.addNumericField("Temporal Resolution", framesPerSec, 3, 5, "Hz");
+        gd.addChoice("Specify Column for X coordinates:", headings, headings[INPUT_X_INDEX]);
+        gd.addChoice("Specify Column for Y coordinates:", headings, headings[INPUT_Y_INDEX]);
+        gd.addChoice("Specify Column for Frame Number:", headings, headings[INPUT_FRAME_INDEX]);
+        gd.addChoice("Specify Column for Track ID:", headings, headings[INPUT_ID_INDEX]);
         gd.showDialog();
         if (!gd.wasOKed()) {
             return false;
         }
         minVel = gd.getNextNumber();
         minDist = gd.getNextNumber();
-        timeRes = gd.getNextNumber();
-        X_INDEX = gd.getNextChoiceIndex();
-        Y_INDEX = gd.getNextChoiceIndex();
-        ID_INDEX = gd.getNextChoiceIndex();
+        framesPerSec = gd.getNextNumber();
+        INPUT_X_INDEX = gd.getNextChoiceIndex();
+        INPUT_Y_INDEX = gd.getNextChoiceIndex();
+        INPUT_FRAME_INDEX = gd.getNextChoiceIndex();
+        INPUT_ID_INDEX = gd.getNextChoiceIndex();
         return true;
     }
 }

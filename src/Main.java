@@ -13,7 +13,7 @@ import CALM_.Trajectory_Analysis.Trajectory_Analyser;
 public class Main {
 
     public static void main(String args[]) {
-        (new Trajectory_Analyser()).run();
+        (new Trajectory_Analyser()).run(null);
         System.exit(0);
     }
 }
