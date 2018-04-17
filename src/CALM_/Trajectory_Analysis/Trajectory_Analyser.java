@@ -58,12 +58,15 @@ public class Trajectory_Analyser implements PlugIn {
 //D:\OneDrive - The Francis Crick Institute\Working Data\Ultanir\TrkB\Manual tracking
 
     public void run(String args) {
+        IJ.log(String.format("Running %s\n", TITLE));
         double[][] inputData;
         ArrayList<String> headings = new ArrayList();
         ArrayList<String> labels = new ArrayList();
         try {
             inputFile = Utilities.getFile(inputFile, "Select input file", true);
+            IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
             inputData = DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, headings, labels);
+            IJ.log("Parsing data...");
         } catch (Exception e) {
             GenUtils.error("Cannot read input file.");
             return;
@@ -73,15 +76,20 @@ public class Trajectory_Analyser implements PlugIn {
         if (!showDialog(headingsArray)) {
             return;
         }
+        IJ.log("Calculating instananeous velocities...");
         double[][][] vels = calcInstVels(processData(inputData), _X_, _Y_, _T_);
+        IJ.log("Calculating mean velocities...");
         double[][] meanVels = calcMeanVels(vels, minVel);
+        IJ.log("Analysing runs...");
         double[][][] runLengths = calcRunLengths(vels, minVel);
         try {
+            IJ.log("Saving outputs...");
             saveVelData(vels);
             saveMeanVels(meanVels);
             saveRunLengths(runLengths);
         } catch (IOException e) {
         }
+        IJ.log("Done.");
     }
 
     double[][][] processData(double[][] inputData) {
