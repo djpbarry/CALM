@@ -47,7 +47,7 @@ public class Trajectory_Analyser implements PlugIn {
     private double framesPerSec = 1.0;
     private static int INPUT_X_INDEX = 4, INPUT_Y_INDEX = 5, INPUT_ID_INDEX = 2, INPUT_FRAME_INDEX = 8;
     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
-    private final int V_X = 0, V_Y = 1, V_M = 2, V_Th = 3, V_T = 4, V_ID = 5;
+    private final int V_X = 0, V_Y = 1, V_M = 2, V_Th = 3, V_T = 4, V_ID = 5, V_D = 6;
     private final String TITLE = "Trajectory Analysis";
     private final String MIC_PER_SEC = String.format("%cm/s", IJ.micronSymbol);
     private LinkedHashMap<Integer, Integer> idIndexMap;
@@ -134,7 +134,7 @@ public class Trajectory_Analyser implements PlugIn {
         double[][][] vels = new double[a][][];
         for (int i = 0; i < a; i++) {
             int b = data[i].length;
-            vels[i] = new double[b - 1][6];
+            vels[i] = new double[b - 1][7];
             for (int j = 1; j < b; j++) {
                 double x2 = data[i][j][X_INDEX];
                 double x1 = data[i][j - 1][X_INDEX];
@@ -144,7 +144,8 @@ public class Trajectory_Analyser implements PlugIn {
                 double t1 = data[i][j - 1][FRAME_INDEX] / framesPerSec;
                 vels[i][j - 1][V_X] = (x2 - x1) / (t2 - t1);
                 vels[i][j - 1][V_Y] = (y2 - y1) / (t2 - t1);
-                vels[i][j - 1][V_M] = Utils.calcDistance(x1, y1, x2, y2) / (t2 - t1);
+                vels[i][j - 1][V_D] = Utils.calcDistance(x1, y1, x2, y2);
+                vels[i][j - 1][V_M] = vels[i][j - 1][V_D] / (t2 - t1);
                 vels[i][j - 1][V_Th] = Utils.arcTan(x2 - x1, y2 - y1);
                 vels[i][j - 1][V_T] = t2 - t1;
                 vels[i][j - 1][V_ID] = idIndexMap.get(i);
@@ -186,7 +187,7 @@ public class Trajectory_Analyser implements PlugIn {
             int b = vels[i].length;
             DescriptiveStatistics xVel = null;
             DescriptiveStatistics yVel = null;
-            double time = 0.0;
+            double time = 0.0, cumDist = 0.0, netDistX = 0.0, netDistY = 0.0;
             for (int j = 0; j < b; j++) {
                 if (vels[i][j][V_M] >= minVel) {
                     if (xVel == null) {
@@ -197,15 +198,21 @@ public class Trajectory_Analyser implements PlugIn {
                     xVel.addValue(vels[i][j][V_X]);
                     yVel.addValue(vels[i][j][V_Y]);
                     time += vels[i][j][V_T];
+                    cumDist += vels[i][j][V_D];
+                    netDistX += vels[i][j][V_X] * vels[i][j][V_T];
+                    netDistY += vels[i][j][V_Y] * vels[i][j][V_T];
                 } else if (xVel != null) {
-                    addRun(xVel, yVel, time, current, id);
+                    addRun(xVel, yVel, time, current, id, cumDist, Utils.calcDistance(0.0, 0.0, netDistX, netDistY));
                     xVel = null;
                     yVel = null;
                     time = 0.0;
+                    cumDist = 0.0;
+                    netDistX = 0.0;
+                    netDistY = 0.0;
                 }
             }
             if (xVel != null) {
-                addRun(xVel, yVel, time, current, id);
+                addRun(xVel, yVel, time, current, id, cumDist, Utils.calcDistance(0.0, 0.0, netDistX, netDistY));
             }
             runs.add(current);
         }
@@ -226,14 +233,13 @@ public class Trajectory_Analyser implements PlugIn {
         return output;
     }
 
-    private void addRun(DescriptiveStatistics xVel, DescriptiveStatistics yVel, double time, ArrayList<double[]> current, int id) {
+    private void addRun(DescriptiveStatistics xVel, DescriptiveStatistics yVel, double time, ArrayList<double[]> current, int id, double dist, double netDist) {
         double meanX = xVel.getMean();
         double meanY = yVel.getMean();
         double mag = Math.sqrt(Math.pow(meanX, 2.0) + Math.pow(meanY, 2.0));
         double theta = Utils.arcTan(meanX, meanY);
-        double dist = Utils.calcDistance(0.0, 0.0, xVel.getSum(), yVel.getSum());
-        if (dist > minDist) {
-            current.add(new double[]{id, mag, theta, dist, time});
+        if (netDist > minDist) {
+            current.add(new double[]{id, mag, theta, netDist, dist, time});
         }
     }
 
@@ -244,19 +250,14 @@ public class Trajectory_Analyser implements PlugIn {
             velFile.delete();
         }
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velFile), GenVariables.ISO), CSVFormat.EXCEL);
-        printer.printRecord(((Object[]) new String[]{"Track ID",
-            String.format("X Vel (%s)", MIC_PER_SEC),
+        printer.printRecord(((Object[]) new String[]{String.format("X Vel (%s)", MIC_PER_SEC),
             String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
             String.format("Theta (%c)", IJ.degreeSymbol),
-            "Time (s)"}));
+            "Time (s)", "Track ID", "Distance"}));
         printer.close();
         for (int i = 0; i < vels.length; i++) {
             double[][] v = vels[i];
-            String[] rowLabels = new String[v.length];
-            for (int j = 0; j < v.length; j++) {
-                rowLabels[j] = String.valueOf(idIndexMap.get(i));
-            }
-            DataWriter.saveValues(v, velFile, null, rowLabels, true);
+            DataWriter.saveValues(v, velFile, null, null, true);
         }
     }
 
@@ -280,11 +281,11 @@ public class Trajectory_Analyser implements PlugIn {
             velData.delete();
         }
         CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velData), GenVariables.ISO), CSVFormat.EXCEL);
-        printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "Duration (s)"}));
+        printer.printRecord(((Object[]) new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol), "Net Distance", "Cumulative Distance", "Duration (s)"}));
         printer.close();
         for (int i = 0; i < runs.length; i++) {
             double[][] v = runs[i];
-            DataWriter.saveValues(v, velData, null,null, true);
+            DataWriter.saveValues(v, velData, null, null, true);
         }
     }
 
