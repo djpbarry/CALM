@@ -16,12 +16,12 @@ public class Smoother {
     public static double[][][] smoothData(double[][][] inputData, int window, boolean[] keys) {
         DescriptiveStatistics[] stats = new DescriptiveStatistics[keys.length];
         int statSize = 2 * window + 1;
-        for (int i=0;i<keys.length;i++){
-            stats[i] = new DescriptiveStatistics(statSize);
-        }
         int iDL = inputData.length;
         double[][][] outputData = new double[iDL][][];
         for (int dataIndex = 0; dataIndex < iDL; dataIndex++) {
+            for (int i = 0; i < keys.length; i++) {
+                stats[i] = new DescriptiveStatistics(statSize);
+            }
             double[][] currentData = inputData[dataIndex];
             int cDL = currentData.length;
             outputData[dataIndex] = new double[cDL][];
