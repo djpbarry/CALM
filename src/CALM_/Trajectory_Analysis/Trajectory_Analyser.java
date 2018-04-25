@@ -42,14 +42,17 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 public class Trajectory_Analyser implements PlugIn {
 
     private File inputFile = new File("D:\\OneDrive - The Francis Crick Institute\\Working Data\\Ultanir\\TrkB\\Manual tracking");
-    private double minVel = 0.01;
-    private double minDist = 1.0;
-    private double framesPerSec = 1.0;
+    private static double minVel = 0.01;
+    private static double minDist = 0.0;
+    private static double framesPerSec = 3.0;
+    private static int smoothingWindow = 1;
+    private static boolean smooth = false, interpolate = false;
     private static int INPUT_X_INDEX = 4, INPUT_Y_INDEX = 5, INPUT_ID_INDEX = 2, INPUT_FRAME_INDEX = 8;
     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
     private final int V_X = 0, V_Y = 1, V_M = 2, V_Th = 3, V_F = 4, V_ID = 5, V_D = 6, V_T = 7;
     private final String TITLE = "Trajectory Analysis";
-    private final String MIC_PER_SEC = String.format("%cm/s", IJ.micronSymbol);
+    private final String MIC = String.format("%cm", IJ.micronSymbol);
+    private final String MIC_PER_SEC = String.format("%s/s", MIC);
     private LinkedHashMap<Integer, Integer> idIndexMap;
 
     public Trajectory_Analyser() {
@@ -76,15 +79,34 @@ public class Trajectory_Analyser implements PlugIn {
         if (!showDialog(headingsArray)) {
             return;
         }
-        IJ.log("Calculating instananeous velocities...");
-        double[][][] vels = calcInstVels(processData(inputData), _X_, _Y_, _T_);
-        IJ.log("Calculating mean velocities...");
-        double[][] meanVels = calcMeanVels(vels, minVel);
-        IJ.log("Analysing runs...");
-        double[][][] runLengths = calcRunLengths(vels, minVel);
         try {
+            IJ.log("Calculating instananeous velocities...");
+            double[][][] processedInputData = processData(inputData);
+            double[][][] interData = processedInputData;
+            if (interpolate) {
+                interData = Interpolator.interpolateLinearly(processedInputData, _T_, new boolean[]{true, true, true, false});
+                saveData(interData, "Interpolated_Coordinates.csv",
+                        new String[]{headingsArray[INPUT_X_INDEX], headingsArray[INPUT_Y_INDEX],
+                            headingsArray[INPUT_FRAME_INDEX], headingsArray[INPUT_ID_INDEX]});
+            }
+            double[][][] smoothedData = interData;
+            if (smooth) {
+                smoothedData = Smoother.smoothData(interData, smoothingWindow, new boolean[]{true, true, false, false});
+                saveData(smoothedData, "Smoothed_Coordinates.csv",
+                        new String[]{headingsArray[INPUT_X_INDEX], headingsArray[INPUT_Y_INDEX],
+                            headingsArray[INPUT_FRAME_INDEX], headingsArray[INPUT_ID_INDEX]});
+            }
+            double[][][] vels = calcInstVels(smoothedData, _X_, _Y_, _T_);
+            IJ.log("Calculating mean velocities...");
+            double[][] meanVels = calcMeanVels(vels, minVel);
+            IJ.log("Analysing runs...");
+            double[][][] runLengths = calcRunLengths(vels, minVel);
             IJ.log("Saving outputs...");
-            saveVelData(vels);
+            saveData(vels, "Instantaneous_Velocities.csv",
+                    new String[]{String.format("X Vel (%s)", MIC_PER_SEC),
+                        String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
+                        String.format("Theta (%c)", IJ.degreeSymbol),
+                        "Time (frames)", "Track ID", "Distance", "Time (s)"});
             saveMeanVels(meanVels);
             saveRunLengths(runLengths);
         } catch (IOException e) {
@@ -250,21 +272,18 @@ public class Trajectory_Analyser implements PlugIn {
         }
     }
 
-    void saveVelData(double[][][] vels) throws IOException {
+    void saveData(double[][][] data, String filename, String[] headings) throws IOException {
         File dir = inputFile.getParentFile();
-        File velFile = new File(String.format("%s%s%s", dir, File.separator, "Instantaneous_Velocities.csv"));
-        if (velFile.exists()) {
-            velFile.delete();
+        File file = new File(String.format("%s%s%s", dir, File.separator, filename));
+        if (file.exists()) {
+            file.delete();
         }
-        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(velFile), GenVariables.ISO), CSVFormat.EXCEL);
-        printer.printRecord(((Object[]) new String[]{String.format("X Vel (%s)", MIC_PER_SEC),
-            String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
-            String.format("Theta (%c)", IJ.degreeSymbol),
-            "Time (frames)", "Track ID", "Distance", "Time (s)"}));
+        CSVPrinter printer = new CSVPrinter(new OutputStreamWriter(new FileOutputStream(file), GenVariables.ISO), CSVFormat.EXCEL);
+        printer.printRecord(((Object[]) headings));
         printer.close();
-        for (int i = 0; i < vels.length; i++) {
-            double[][] v = vels[i];
-            DataWriter.saveValues(v, velFile, null, null, true);
+        for (int i = 0; i < data.length; i++) {
+            double[][] d = data[i];
+            DataWriter.saveValues(d, file, null, null, true);
         }
     }
 
@@ -299,12 +318,14 @@ public class Trajectory_Analyser implements PlugIn {
     boolean showDialog(String[] headings) {
         GenericDialog gd = new GenericDialog(TITLE);
         gd.addNumericField("Minimum Velocity", minVel, 3, 5, MIC_PER_SEC);
-        gd.addNumericField("Minimum Distance", minDist, 3, 5, "");
+        gd.addNumericField("Minimum Distance", minDist, 3, 5, MIC);
         gd.addNumericField("Temporal Resolution", framesPerSec, 3, 5, "Hz");
+        gd.addNumericField("Smoothing Window", smoothingWindow, 0, 5, "Frames");
         gd.addChoice("Specify Column for X coordinates:", headings, headings[INPUT_X_INDEX]);
         gd.addChoice("Specify Column for Y coordinates:", headings, headings[INPUT_Y_INDEX]);
         gd.addChoice("Specify Column for Frame Number:", headings, headings[INPUT_FRAME_INDEX]);
         gd.addChoice("Specify Column for Track ID:", headings, headings[INPUT_ID_INDEX]);
+        gd.addCheckboxGroup(1, 2, new String[]{"Smooth Data", "Interpolate Data"}, new boolean[]{smooth, interpolate});
         gd.showDialog();
         if (!gd.wasOKed()) {
             return false;
@@ -316,6 +337,8 @@ public class Trajectory_Analyser implements PlugIn {
         INPUT_Y_INDEX = gd.getNextChoiceIndex();
         INPUT_FRAME_INDEX = gd.getNextChoiceIndex();
         INPUT_ID_INDEX = gd.getNextChoiceIndex();
+        smooth = gd.getNextBoolean();
+        interpolate = gd.getNextBoolean();
         return true;
     }
 }
