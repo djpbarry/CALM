@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package CALM_.Trajectory_Analysis;
+package CALM_.DataProcessing;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
