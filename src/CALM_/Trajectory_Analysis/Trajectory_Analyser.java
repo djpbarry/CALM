@@ -228,8 +228,8 @@ public class Trajectory_Analyser implements PlugIn {
                     }
                     theta.addValue(vels[i][j][V_Y]);
                     cumDist += vels[i][j][V_D];
-                    netDistX += vels[i][j][V_X] * vels[i][j][V_F];
-                    netDistY += vels[i][j][V_Y] * vels[i][j][V_F];
+                    netDistX += vels[i][j][V_X] * vels[i][j][V_T];
+                    netDistY += vels[i][j][V_Y] * vels[i][j][V_T];
                     lastDir = dir;
                 } else if (mVel != null) {
                     addRun(mVel, theta, time, current, id, cumDist, Utils.calcDistance(0.0, 0.0, netDistX, netDistY));
