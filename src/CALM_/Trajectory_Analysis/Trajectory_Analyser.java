@@ -209,8 +209,9 @@ public class Trajectory_Analyser implements PlugIn {
             ArrayList<double[]> current = new ArrayList();
             int b = vels[i].length;
             DescriptiveStatistics mVel = null;
-            DescriptiveStatistics theta = null;
-            double time = 0.0, cumDist = 0.0, netDistX = 0.0, netDistY = 0.0;
+            DescriptiveStatistics xVel = null;
+            DescriptiveStatistics yVel = null;
+            double time = 0.0, cumDist = 0.0, netDistX = 0.0, netDistY = 0.0, sumX = 0.0, sumY = 0.0;
             boolean dir = vels[i][0][V_Th] > 90 && vels[i][0][V_Th] < 270;
             boolean lastDir = dir;
             for (int j = 0; j < b; j++) {
@@ -218,23 +219,25 @@ public class Trajectory_Analyser implements PlugIn {
                 if (vels[i][j][V_M] >= minVel && dir == lastDir) {
                     if (mVel == null) {
                         mVel = new DescriptiveStatistics();
-                        theta = new DescriptiveStatistics();
+                        xVel = new DescriptiveStatistics();
+                        yVel = new DescriptiveStatistics();
                         time = 0.0;
                     }
                     time += vels[i][j][V_F];
                     for (int t = 0; t < vels[i][j][V_F]; t++) {
                         mVel.addValue(Math.sqrt(vels[i][j][V_X] * vels[i][j][V_X] + vels[i][j][V_Y] * vels[i][j][V_Y]));
-                        theta.addValue(vels[i][j][V_Th]);
+                        xVel.addValue(vels[i][j][V_X]);
+                        yVel.addValue(vels[i][j][V_Y]);
                     }
-                    theta.addValue(vels[i][j][V_Y]);
                     cumDist += vels[i][j][V_D];
                     netDistX += vels[i][j][V_X] * vels[i][j][V_T];
                     netDistY += vels[i][j][V_Y] * vels[i][j][V_T];
                     lastDir = dir;
                 } else if (mVel != null) {
-                    addRun(mVel, theta, time, current, id, cumDist, Utils.calcDistance(0.0, 0.0, netDistX, netDistY));
+                    addRun(mVel, xVel, yVel, time, current, id, cumDist, Utils.calcDistance(0.0, 0.0, netDistX, netDistY));
                     mVel = null;
-                    theta = null;
+                    xVel = null;
+                    yVel = null;
                     time = 0.0;
                     cumDist = 0.0;
                     netDistX = 0.0;
@@ -242,10 +245,12 @@ public class Trajectory_Analyser implements PlugIn {
                     if (j < b - 1) {
                         lastDir = vels[i][j + 1][V_Th] > 90 && vels[i][j + 1][V_Th] < 270;
                     }
+                } else {
+                    lastDir = dir;
                 }
             }
             if (mVel != null) {
-                addRun(mVel, theta, time, current, id, cumDist, Utils.calcDistance(0.0, 0.0, netDistX, netDistY));
+                addRun(mVel, xVel, yVel, time, current, id, cumDist, Utils.calcDistance(0.0, 0.0, netDistX, netDistY));
             }
             runs.add(current);
         }
@@ -266,9 +271,9 @@ public class Trajectory_Analyser implements PlugIn {
         return output;
     }
 
-    private void addRun(DescriptiveStatistics mVel, DescriptiveStatistics tVel, double time, ArrayList<double[]> current, int id, double dist, double netDist) {
+    private void addRun(DescriptiveStatistics mVel, DescriptiveStatistics xVel, DescriptiveStatistics yVel, double time, ArrayList<double[]> current, int id, double dist, double netDist) {
         double meanMag = mVel.getMean();
-        double meanTheta = tVel.getMean();
+        double meanTheta = Utils.arcTan(xVel.getMean(), yVel.getMean());
         if (netDist > minDist) {
             current.add(new double[]{id, meanMag, meanTheta, netDist, dist, time / framesPerSec});
         }
