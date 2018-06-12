@@ -111,9 +111,7 @@ public class BALM_Analysis extends GPUAnalyse {
             }
         }
         if (trajectories.size() > 0) {
-            ImageStack maps = mapTrajectories((new RGBStackMerge()).mergeStacks(stacks[1].getWidth(), stacks[1].getHeight(), stacks[1].getSize(), null, stacks[1], null, true),
-                    trajectories, UserVariables.getSpatialRes(), UserVariables.getMinTrajLength(),
-                    UserVariables.getTimeRes(), true, 0, trajectories.size() - 1, 1, false, calcParticleRadius(UserVariables.getSpatialRes(), UserVariables.getSigEstRed()));
+            inputs[1].setOverlay(mapTrajectories(trajectories, UserVariables.getSpatialRes(), true, 0, trajectories.size() - 1, 1, calcParticleRadius(UserVariables.getSpatialRes(), UserVariables.getSigEstRed()), stacks[1].getSize()));
             results.append("\nAnalysis Time (s): " + numFormat.format((System.currentTimeMillis() - startTime) / 1000.0));
             results.setVisible(true);
             double[][] fluorVals = extractFluorVals(trajectories, stacks[1].size());
@@ -129,10 +127,7 @@ public class BALM_Analysis extends GPUAnalyse {
 //                printTrajectories(trajectories, new File(String.format("%s%s%s", parentDir, File.separator, "AllParticleData.csv")), stacks[1].size());
 //            } catch (IOException e) {
 //            }
-            if (maps != null) {
-                (new ImagePlus("Trajectory Maps", maps)).show();
-                IJ.saveAs((new ImagePlus("", maps)), "TIF", parentDir + "/trajectories.tif");
-            }
+            IJ.saveAs(inputs[1], "TIF", parentDir + "/trajectories.tif");
         } else {
             IJ.log("No Particle Trajectories Constructed.");
         }
