@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package CALM.MM;
+package CALM_.MM;
 
+import UtilClasses.GenVariables;
 import UtilClasses.Utilities;
 import ij.IJ;
 import ij.plugin.PlugIn;
@@ -30,7 +31,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
  */
 public class MetaData_Cleaner implements PlugIn {
 
-    private Charset charSet = Charset.defaultCharset();
+    private Charset charSet = GenVariables.UTF8;
     private String[] keys = {"IJType", "GridRow", "Comment", "UUID", "Height",
         "GridColumn", "CameraTimeout", "Depth", "BitDepth", "KeepShutterOpenChannels",
         "PixelType", "Source", "TimeFirst", "ChColors", "SlicesFirst",
@@ -49,6 +50,7 @@ public class MetaData_Cleaner implements PlugIn {
             Iterator<File> iter = FileUtils.iterateFiles(inputDir, new FileNameFilter(), TrueFileFilter.INSTANCE);
             while (iter.hasNext()) {
                 File file = iter.next();
+                IJ.log(String.format("Processing %s", file.getName()));
                 copyFile(file, new File(String.format("%s.backup", file.getAbsolutePath())));
                 processFile(file);
                 Files.delete(file.toPath());
@@ -57,6 +59,7 @@ public class MetaData_Cleaner implements PlugIn {
             IJ.log("Sorry, we've encountered a problem - aborting.");
             e.printStackTrace();
         }
+        IJ.log("Done");
     }
 
     String checkLine(String line) {
