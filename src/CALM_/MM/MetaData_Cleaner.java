@@ -42,7 +42,7 @@ public class MetaData_Cleaner implements PlugIn {
         "Width-", "Positions-", "ROI-"};
     private File inputDir;
     private String ext = "txt";
-    private String metadata = "_metadata";
+    private String metadata = "metadata";
 
     public void run(String args) {
         try {
