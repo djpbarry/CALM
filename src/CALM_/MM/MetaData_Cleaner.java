@@ -8,6 +8,7 @@ package CALM_.MM;
 import UtilClasses.GenVariables;
 import UtilClasses.Utilities;
 import ij.IJ;
+import ij.ImagePlus;
 import ij.plugin.PlugIn;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,6 +21,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Iterator;
+import loci.plugins.BF;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -46,6 +48,7 @@ public class MetaData_Cleaner implements PlugIn {
 
     public void run(String args) {
         try {
+//            ImagePlus[] imp = BF.openImagePlus("C:\\Users\\barryd\\AcquisitionData\\Untitled_2\\Untitled_2_MMStack_Pos0_metadata.txt");
             inputDir = Utilities.getFolder(null, "Specify input directory", true);
             Iterator<File> iter = FileUtils.iterateFiles(inputDir, new FileNameFilter(), TrueFileFilter.INSTANCE);
             while (iter.hasNext()) {
