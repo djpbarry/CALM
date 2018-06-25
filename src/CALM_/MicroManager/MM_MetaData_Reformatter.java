@@ -48,10 +48,11 @@ public class MM_MetaData_Reformatter implements PlugIn {
     public void run(String args) {
         try {
             inputDir = Utilities.getFolder(null, "Specify input directory", true);
+            IJ.log(String.format("Root Directory: %s\n", inputDir.getAbsolutePath()));
             Iterator<File> metaIter = FileUtils.iterateFiles(inputDir, new MetaFileNameFilter(), TrueFileFilter.INSTANCE);
             while (metaIter.hasNext()) {
                 File file = metaIter.next();
-                IJ.log(String.format("Processing %s", file.getName()));
+                IJ.log(String.format("Processing %s", file.getAbsolutePath()));
                 copyFile(file, new File(String.format("%s.backup", file.getAbsolutePath())));
                 processFile(file);
                 Files.delete(file.toPath());
@@ -59,10 +60,12 @@ public class MM_MetaData_Reformatter implements PlugIn {
             Iterator<File> imageIter = FileUtils.iterateFiles(inputDir, new ImageFileNameFilter(), TrueFileFilter.INSTANCE);
             while (imageIter.hasNext()) {
                 File file = imageIter.next();
-                File newFileName = new File(String.format("%s%s%s", file.getParent(), File.separator, renameFile(file.getName())));
-                IJ.log(String.format("Renaming %s", file.getName()));
-                file.renameTo(newFileName);
-                IJ.wait(0);
+                String newFileBaseName = renameFile(file.getName());
+                if (newFileBaseName != null) {
+                    File newFileName = new File(String.format("%s%s%s", file.getParent(), File.separator, renameFile(file.getName())));
+                    IJ.log(String.format("Renaming %s as %s", file.getName(), newFileName.getName()));
+                    file.renameTo(newFileName);
+                }
             }
         } catch (Exception e) {
             IJ.log("Sorry, we've encountered a problem - aborting.");
@@ -90,8 +93,10 @@ public class MM_MetaData_Reformatter implements PlugIn {
                 }
             }
             filename = String.format("%s_%s_%s_%s_%s.%s", itczp[0], itczp[1], itczp[2], itczp[3], itczp[4], ext);
+            return filename;
+        } else {
+            return null;
         }
-        return filename;
     }
 
     private ArrayList<String> reformatJSONData(String jsonData)
