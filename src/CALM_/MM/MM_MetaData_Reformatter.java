@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import loci.formats.FormatException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -94,8 +93,8 @@ public class MM_MetaData_Reformatter {
         return filename;
     }
 
-    private ArrayList<String> parsePosition(String jsonData)
-            throws IOException, FormatException {
+    private ArrayList<String> reformatJSONData(String jsonData)
+            throws IOException {
         StringTokenizer st = new StringTokenizer(jsonData, "\n");
         boolean userData = false;
         boolean doNotAddLine = false;
@@ -193,13 +192,13 @@ public class MM_MetaData_Reformatter {
         Files.copy(source.toPath(), dest.toPath());
     }
 
-    void processFile(File file) throws IOException, FormatException {
+    void processFile(File file) throws IOException {
         File output = new File(String.format("%s%s%s%s", FilenameUtils.getFullPath(file.getAbsolutePath()), File.separator, cleaned, FilenameUtils.getName(file.getAbsolutePath())));
         if (output.exists()) {
             return;
         }
         String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-        List formattedData = parsePosition(data);
+        List formattedData = reformatJSONData(data);
         Files.write(output.toPath(), formattedData, StandardOpenOption.CREATE);
     }
 

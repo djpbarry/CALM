@@ -8,7 +8,6 @@ package CALM_.MM;
 import UtilClasses.GenVariables;
 import UtilClasses.Utilities;
 import ij.IJ;
-import ij.ImagePlus;
 import ij.plugin.PlugIn;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,7 +20,6 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Iterator;
-import loci.plugins.BF;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
@@ -31,7 +29,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MetaData_Cleaner implements PlugIn {
+public class MetaDataCleaner implements PlugIn {
 
     private Charset charSet = GenVariables.UTF8;
     private String[] keys = {"IJType", "GridRow", "Comment", "UUID", "Height",
