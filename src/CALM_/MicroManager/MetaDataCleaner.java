@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package CALM_.MM;
+package CALM_.MicroManager;
 
 import UtilClasses.GenVariables;
 import UtilClasses.Utilities;

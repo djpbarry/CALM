@@ -1,5 +1,5 @@
 
-import CALM_.MM.MM_MetaData_Reformatter;
+import CALM_.MicroManager.MM_MetaData_Reformatter;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
