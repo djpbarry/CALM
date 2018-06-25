@@ -5,6 +5,7 @@
  */
 package CALM_.MM;
 
+import UtilClasses.Utilities;
 import ij.IJ;
 import java.io.File;
 import java.io.IOException;
@@ -46,9 +47,7 @@ public class MM_MetaData_Reformatter {
 
     public void run(String args) {
         try {
-//            ImagePlus[] imp = BF.openImagePlus("C:\\Users\\barryd\\AcquisitionData\\Untitled_2\\Untitled_2_MMStack_Pos0_metadata.txt");
-//            inputDir = Utilities.getFolder(null, "Specify input directory", true);
-            inputDir = new File("C:\\Users\\barryd\\AcquisitionData\\Untitled_1");
+            inputDir = Utilities.getFolder(null, "Specify input directory", true);
             Iterator<File> metaIter = FileUtils.iterateFiles(inputDir, new MetaFileNameFilter(), TrueFileFilter.INSTANCE);
             while (metaIter.hasNext()) {
                 File file = metaIter.next();
