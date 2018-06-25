@@ -7,6 +7,7 @@ package CALM_.MicroManager;
 
 import UtilClasses.Utilities;
 import ij.IJ;
+import ij.plugin.PlugIn;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +26,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class MM_MetaData_Reformatter {
+public class MM_MetaData_Reformatter implements PlugIn {
 
     private File inputDir;
     private String ext = "txt";
