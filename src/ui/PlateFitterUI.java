@@ -9,6 +9,7 @@ import CALM.ROIFitter.AnalysePlate;
 import IO.PropertyWriter;
 import UIClasses.GUIMethods;
 import UIClasses.PropertyExtractor;
+import UtilClasses.GenUtils;
 import UtilClasses.Utilities;
 import ij.IJ;
 import ij.ImagePlus;
@@ -27,6 +28,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
     private static int wellRad = 86;
     private static double xBuff = 30.0;
     private static double yBuff = 20.0;
+    private static double shrinkFactor = 0.9;
     private static double interWellSpacing = 10;
     private final String TITLE = "Plate Analyser";
     private Properties props;
@@ -77,6 +79,8 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         jSeparator2 = new javax.swing.JSeparator();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        shrinkFactorLabel = new javax.swing.JLabel();
+        shrinkFactorTextField = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -252,7 +256,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         previewButton.setText("Preview");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         getContentPane().add(previewButton, gridBagConstraints);
@@ -260,7 +264,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         xPosLabel.setText("X Position (microns):");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
@@ -270,7 +274,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         xPosTextField.setText("jTextField8");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         gridBagConstraints.weightx = 1.0;
@@ -280,7 +284,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         yPosLabel.setText("Y Position (microns):");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
@@ -290,7 +294,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         yPosTextField.setText("jTextField8");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         gridBagConstraints.weightx = 1.0;
@@ -300,7 +304,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         angleLabel.setText("Angle (degrees):");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 1.0;
@@ -310,7 +314,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         angleTextField.setText("jTextField8");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         gridBagConstraints.weightx = 1.0;
@@ -318,14 +322,14 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         getContentPane().add(angleTextField, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
         getContentPane().add(jSeparator1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
@@ -339,7 +343,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -353,11 +357,30 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(cancelButton, gridBagConstraints);
+
+        shrinkFactorLabel.setText("Shrink Factor:");
+        shrinkFactorLabel.setLabelFor(shrinkFactorTextField);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(shrinkFactorLabel, gridBagConstraints);
+
+        shrinkFactorTextField.setText(String.valueOf(shrinkFactor));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(shrinkFactorTextField, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -381,13 +404,14 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
         setVariables();
+        File outputDirectory = new File(GenUtils.openResultsDirectory(String.format("%s%s%s%s", inputDirectory.getAbsolutePath(), File.separator, TITLE, "_Results")));
         try {
-            PropertyWriter.printProperties(props, inputDirectory.getAbsolutePath(), TITLE, true);
+            PropertyWriter.printProperties(props, outputDirectory.getAbsolutePath(), TITLE, true);
         } catch (Exception e) {
             IJ.log("Failed to save property file.");
         }
         cleanUp();
-        (new AnalysePlate(inputDirectory, rows, cols, wellRad, xBuff, yBuff, interWellSpacing)).analyse();
+        (new AnalysePlate(inputDirectory, rows, cols, wellRad, xBuff, yBuff, interWellSpacing, outputDirectory, shrinkFactor)).analyse();
     }//GEN-LAST:event_okButtonActionPerformed
 
     /**
@@ -436,6 +460,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         xBuff = Double.parseDouble(xBuffTextField.getText());
         yBuff = Double.parseDouble(yBuffTextField.getText());
         interWellSpacing = Double.parseDouble(interWellTextField.getText());
+        shrinkFactor = Double.parseDouble(shrinkFactorTextField.getText());
         setProperties(props, this);
         return true;
     }
@@ -462,6 +487,8 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
     private javax.swing.JButton previewButton;
     private javax.swing.JLabel rowLabel;
     private javax.swing.JTextField rowTextField;
+    private javax.swing.JLabel shrinkFactorLabel;
+    private javax.swing.JTextField shrinkFactorTextField;
     private javax.swing.JLabel spatResLabel;
     private javax.swing.JTextField spatResTextField;
     private javax.swing.JLabel wellRadLabel;
