@@ -1,5 +1,5 @@
 
-import CALM_.MicroManager.MM_MetaData_Reformatter;
+import CALM.ROIFitter.Plate_Analyser;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -12,8 +12,8 @@ import CALM_.MicroManager.MM_MetaData_Reformatter;
  */
 public class Main {
 
-    public static void main(String[] args) {
-        new MM_MetaData_Reformatter().run(null);
-        System.exit(0);
-    }
+//    public static void main(String[] args) {
+//        (new Plate_Analyser()).run(null);
+//        System.exit(0);
+//    }
 }
