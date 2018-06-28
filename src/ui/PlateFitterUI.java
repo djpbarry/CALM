@@ -6,7 +6,9 @@
 package ui;
 
 import CALM.ROIFitter.AnalysePlate;
+import IO.File.ImageFilter;
 import IO.PropertyWriter;
+import Math.Optimisation.Plate;
 import UIClasses.GUIMethods;
 import UIClasses.PropertyExtractor;
 import UtilClasses.GenUtils;
@@ -30,6 +32,9 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
     private static double yBuff = 20.0;
     private static double shrinkFactor = 0.9;
     private static double interWellSpacing = 10;
+    private static double xLoc;
+    private static double yLoc;
+    private static double angle;
     private final String TITLE = "Plate Analyser";
     private Properties props;
     private static File inputDirectory;
@@ -254,6 +259,11 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         getContentPane().add(spatResLabel, gridBagConstraints);
 
         previewButton.setText("Preview");
+        previewButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                previewButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 13;
@@ -271,7 +281,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(xPosLabel, gridBagConstraints);
 
-        xPosTextField.setText("jTextField8");
+        xPosTextField.setText(String.valueOf(xLoc));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
@@ -291,7 +301,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(yPosLabel, gridBagConstraints);
 
-        yPosTextField.setText("jTextField8");
+        yPosTextField.setText(String.valueOf(yLoc));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -311,7 +321,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(angleLabel, gridBagConstraints);
 
-        angleTextField.setText("jTextField8");
+        angleTextField.setText(String.valueOf(angle));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
@@ -414,6 +424,19 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         (new AnalysePlate(inputDirectory, rows, cols, wellRad, xBuff, yBuff, interWellSpacing, outputDirectory, shrinkFactor)).analyse();
     }//GEN-LAST:event_okButtonActionPerformed
 
+    private void previewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewButtonActionPerformed
+        setVariables();
+        if (imp != null) {
+            imp.close();
+        }
+        String filename = String.format("%s%s%s", inputDirectory.getAbsolutePath(), File.separator, inputDirectory.list(new ImageFilter(new String[]{"tif", "tiff", "png"}))[0]);
+        imp = IJ.openImage(filename);
+        Plate plate = new Plate(rows, cols, wellRad, xBuff, yBuff, interWellSpacing, shrinkFactor);
+        imp.setOverlay(plate.drawOverlay(xLoc, yLoc, angle));
+        imp.show();
+        IJ.wait(rows);
+    }//GEN-LAST:event_previewButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -461,6 +484,9 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         yBuff = Double.parseDouble(yBuffTextField.getText());
         interWellSpacing = Double.parseDouble(interWellTextField.getText());
         shrinkFactor = Double.parseDouble(shrinkFactorTextField.getText());
+        xLoc = Double.parseDouble(xPosTextField.getText());
+        yLoc = Double.parseDouble(yPosTextField.getText());
+        angle = Double.parseDouble(angleTextField.getText());
         setProperties(props, this);
         return true;
     }
