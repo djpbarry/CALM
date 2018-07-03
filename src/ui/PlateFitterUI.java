@@ -426,15 +426,18 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
 
     private void previewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_previewButtonActionPerformed
         setVariables();
-        if (imp != null) {
-            imp.close();
+        String[] fileList = inputDirectory.list(new ImageFilter(new String[]{"tif", "tiff", "png"}));
+        if (fileList != null) {
+            String filename = String.format("%s%s%s", inputDirectory.getAbsolutePath(), File.separator, fileList[0]);
+            if (imp == null) {
+                imp = IJ.openImage(filename);
+            }
+            Plate plate = new Plate(rows, cols, wellRad, xBuff, yBuff, interWellSpacing, shrinkFactor);
+            imp.setOverlay(plate.drawOverlay(xLoc, yLoc, angle));
+            imp.show();
+        } else {
+            GenUtils.error("No valid input directory selected!");
         }
-        String filename = String.format("%s%s%s", inputDirectory.getAbsolutePath(), File.separator, inputDirectory.list(new ImageFilter(new String[]{"tif", "tiff", "png"}))[0]);
-        imp = IJ.openImage(filename);
-        Plate plate = new Plate(rows, cols, wellRad, xBuff, yBuff, interWellSpacing, shrinkFactor);
-        imp.setOverlay(plate.drawOverlay(xLoc, yLoc, angle));
-        imp.show();
-        IJ.wait(rows);
     }//GEN-LAST:event_previewButtonActionPerformed
 
     /**

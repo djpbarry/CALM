@@ -11,6 +11,7 @@ import Math.Optimisation.Plate;
 import Math.Optimisation.PlateFitter;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
@@ -18,7 +19,6 @@ import ij.plugin.filter.Analyzer;
 import ij.process.ImageProcessor;
 import java.awt.Rectangle;
 import java.io.File;
-import java.util.LinkedList;
 
 /**
  *
@@ -61,12 +61,12 @@ public class AnalysePlate {
             fitter.doFit();
             double[] p = fitter.getParams();
             System.out.println(String.format("X: %f, Y: %f, Theta: %f, Corr: %f", p[0], p[1], p[2], p[3]));
-            LinkedList<Roi> rois = fitter.getPlateTemplate().drawRoi(p[0], p[1], p[2]);
-            int nRois = rois.size();
+            Overlay overlay = fitter.getPlateTemplate().drawOverlay(p[0], p[1], p[2]);
+            int nRois = overlay.size();
             int count = 1;
             for (int i = 0; i < nRois; i++) {
-                if (rois.get(i).getProperty(Plate.PLATE_COMPONENT).contentEquals(Plate.SHRUNK_WELL)) {
-                    Roi well = rois.get(i);
+                if (overlay.get(i).getProperty(Plate.PLATE_COMPONENT).contentEquals(Plate.SHRUNK_WELL)) {
+                    Roi well = overlay.get(i);
                     imp.setRoi(well);
                     output.draw(well);
                     Rectangle wellBounds = well.getBounds();
