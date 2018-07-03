@@ -37,18 +37,20 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
     public static final String X_POS = "X Position (mm):";
     public static final String Y_POS = "Y Position (mm):";
     public static final String ANGLE = "Angle (Degrees):";
+    public static final String SHRINK_FACTOR = "Shrink Factor:";
 
     private static int rows = 2;
     private static int cols = 3;
     private static int wellRad = 86;
     private static double xBuff = 30.0;
     private static double yBuff = 20.0;
-    private static double shrinkFactor = 0.9;
+    private static double wellFraction = 0.9;
     private static double interWellSpacing = 10;
     private static double xLoc;
     private static double yLoc;
     private static double angle;
     private static double spatRes = 1.0;
+    private static double shrinkFactor = 1.0;
     private final String TITLE = "Plate Analyser";
     private Properties props;
     private static File inputDirectory;
@@ -100,6 +102,8 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         jSeparator2 = new javax.swing.JSeparator();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        wellFractionLabel = new javax.swing.JLabel();
+        wellFractionTextField = new javax.swing.JTextField();
         shrinkFactorLabel = new javax.swing.JLabel();
         shrinkFactorTextField = new javax.swing.JTextField();
 
@@ -299,7 +303,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         getContentPane().add(previewButton, gridBagConstraints);
@@ -371,7 +375,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         getContentPane().add(angleTextField, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
+        gridBagConstraints.gridy = 15;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
@@ -392,7 +396,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -407,18 +411,39 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
+        gridBagConstraints.gridy = 16;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 10);
         getContentPane().add(cancelButton, gridBagConstraints);
 
-        shrinkFactorLabel.setText(WELL_FRACTION);
-        shrinkFactorLabel.setLabelFor(shrinkFactorTextField);
+        wellFractionLabel.setText(WELL_FRACTION);
+        wellFractionLabel.setLabelFor(wellFractionTextField);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
+        getContentPane().add(wellFractionLabel, gridBagConstraints);
+
+        wellFractionTextField.setText(String.valueOf(wellFraction));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 10, 0, 10);
+        getContentPane().add(wellFractionTextField, gridBagConstraints);
+
+        shrinkFactorLabel.setText(SHRINK_FACTOR);
+        shrinkFactorLabel.setLabelFor(shrinkFactorTextField);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -428,7 +453,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         shrinkFactorTextField.setText(String.valueOf(shrinkFactor));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -478,8 +503,8 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         if (imp == null) {
             imp = IJ.openImage(filename);
         }
-        Plate plate = new Plate(rows, cols, wellRad, xBuff, yBuff, interWellSpacing, shrinkFactor);
-        imp.setOverlay(plate.drawOverlay(xLoc, yLoc, angle));
+        Plate plate = new Plate(rows, cols, wellRad/spatRes, xBuff/spatRes, yBuff/spatRes, interWellSpacing/spatRes, wellFraction);
+        imp.setOverlay(plate.drawOverlay(xLoc/spatRes, yLoc/spatRes, angle));
         imp.show();
     }//GEN-LAST:event_previewButtonActionPerformed
 
@@ -533,11 +558,12 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         xBuff = Double.parseDouble(xBuffTextField.getText());
         yBuff = Double.parseDouble(yBuffTextField.getText());
         interWellSpacing = Double.parseDouble(interWellTextField.getText());
-        shrinkFactor = Double.parseDouble(shrinkFactorTextField.getText());
+        wellFraction = Double.parseDouble(wellFractionTextField.getText());
         xLoc = Double.parseDouble(xPosTextField.getText());
         yLoc = Double.parseDouble(yPosTextField.getText());
         angle = Double.parseDouble(angleTextField.getText());
         spatRes = Double.parseDouble(spatResTextField.getText());
+        shrinkFactor = Double.parseDouble(shrinkFactorTextField.getText());
         setProperties(props, this);
         return true;
     }
@@ -568,6 +594,8 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
     private javax.swing.JTextField shrinkFactorTextField;
     private javax.swing.JLabel spatResLabel;
     private javax.swing.JTextField spatResTextField;
+    private javax.swing.JLabel wellFractionLabel;
+    private javax.swing.JTextField wellFractionTextField;
     private javax.swing.JLabel wellRadLabel;
     private javax.swing.JTextField wellRadTextField;
     private javax.swing.JLabel xBuffLabel;

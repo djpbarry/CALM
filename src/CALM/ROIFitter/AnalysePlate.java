@@ -30,11 +30,11 @@ public class AnalysePlate {
 
     int rows;
     int cols;
-    int wellRad;
+    double wellRad;
     double xBuff;
     double yBuff;
     double interWellSpacing;
-    double shrinkFactor;
+    double wellFraction;
     double spatRes;
     File inputDirectory, outputDirectory;
 
@@ -42,11 +42,11 @@ public class AnalysePlate {
         this.spatRes = Double.parseDouble(props.getProperty(PlateFitterUI.SPAT_RES));
         this.rows = Integer.parseInt(props.getProperty(PlateFitterUI.N_ROWS));
         this.cols = Integer.parseInt(props.getProperty(PlateFitterUI.N_COLS));
-        this.wellRad = Integer.parseInt(props.getProperty(PlateFitterUI.WELL_RAD));
-        this.xBuff = Double.parseDouble(props.getProperty(PlateFitterUI.X_BUFF));
-        this.yBuff = Double.parseDouble(props.getProperty(PlateFitterUI.Y_BUFF));
-        this.shrinkFactor = Double.parseDouble(props.getProperty(PlateFitterUI.WELL_FRACTION));
-        this.interWellSpacing = Double.parseDouble(props.getProperty(PlateFitterUI.WELL_SPACING));
+        this.wellRad = Integer.parseInt(props.getProperty(PlateFitterUI.WELL_RAD)) / spatRes;
+        this.xBuff = Double.parseDouble(props.getProperty(PlateFitterUI.X_BUFF)) / spatRes;
+        this.yBuff = Double.parseDouble(props.getProperty(PlateFitterUI.Y_BUFF)) / spatRes;
+        this.wellFraction = Double.parseDouble(props.getProperty(PlateFitterUI.WELL_FRACTION));
+        this.interWellSpacing = Double.parseDouble(props.getProperty(PlateFitterUI.WELL_SPACING)) / spatRes;
         this.inputDirectory = inputDirectory;
         this.outputDirectory = outputDirectory;
     }
@@ -61,10 +61,10 @@ public class AnalysePlate {
             ImageProcessor output = imp.duplicate().getProcessor();
             output.setValue(0);
             output.setLineWidth(3);
-            PlateFitter fitter = new PlateFitter(imp.getProcessor(), rows, cols, wellRad, xBuff, yBuff, interWellSpacing, shrinkFactor);
+            PlateFitter fitter = new PlateFitter(imp.getProcessor(), rows, cols, wellRad, xBuff, yBuff, interWellSpacing, wellFraction);
             fitter.doFit();
             double[] p = fitter.getParams();
-            System.out.println(String.format("X: %f, Y: %f, Theta: %f, Corr: %f", p[0], p[1], p[2], p[3]));
+            System.out.println(String.format("X: %f, Y: %f, Theta: %f, Corr: %f", p[0]*spatRes, p[1]*spatRes, p[2], p[3]));
             LinkedList<Roi> rois = fitter.getPlateTemplate().drawRoi(p[0], p[1], p[2]);
             int nRois = rois.size();
             int count = 1;
