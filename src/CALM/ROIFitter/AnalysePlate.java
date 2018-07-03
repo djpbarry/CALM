@@ -11,7 +11,6 @@ import Math.Optimisation.Plate;
 import Math.Optimisation.PlateFitter;
 import ij.IJ;
 import ij.ImagePlus;
-import ij.gui.Overlay;
 import ij.gui.Roi;
 import ij.measure.Measurements;
 import ij.measure.ResultsTable;
@@ -19,6 +18,9 @@ import ij.plugin.filter.Analyzer;
 import ij.process.ImageProcessor;
 import java.awt.Rectangle;
 import java.io.File;
+import java.util.LinkedList;
+import java.util.Properties;
+import ui.PlateFitterUI;
 
 /**
  *
@@ -26,23 +28,25 @@ import java.io.File;
  */
 public class AnalysePlate {
 
-    int rows = 2;
-    int cols = 3;
-    int wellRad = 86;
-    double xBuff = 30.0;
-    double yBuff = 20.0;
-    double interWellSpacing = 10;
-    double shrinkFactor = 0.9;
+    int rows;
+    int cols;
+    int wellRad;
+    double xBuff;
+    double yBuff;
+    double interWellSpacing;
+    double shrinkFactor;
+    double spatRes;
     File inputDirectory, outputDirectory;
 
-    public AnalysePlate(File inputDirectory, int rows, int cols, int wellRad, double xBuff, double yBuff, double interWellSpacing, File outputDirectory, double shrinkFactor) {
-        this.rows = rows;
-        this.cols = cols;
-        this.wellRad = wellRad;
-        this.xBuff = xBuff;
-        this.yBuff = yBuff;
-        this.shrinkFactor = shrinkFactor;
-        this.interWellSpacing = interWellSpacing;
+    public AnalysePlate(Properties props, File inputDirectory, File outputDirectory) {
+        this.spatRes = Double.parseDouble(props.getProperty(PlateFitterUI.SPAT_RES));
+        this.rows = Integer.parseInt(props.getProperty(PlateFitterUI.N_ROWS));
+        this.cols = Integer.parseInt(props.getProperty(PlateFitterUI.N_COLS));
+        this.wellRad = Integer.parseInt(props.getProperty(PlateFitterUI.WELL_RAD));
+        this.xBuff = Double.parseDouble(props.getProperty(PlateFitterUI.X_BUFF));
+        this.yBuff = Double.parseDouble(props.getProperty(PlateFitterUI.Y_BUFF));
+        this.shrinkFactor = Double.parseDouble(props.getProperty(PlateFitterUI.WELL_FRACTION));
+        this.interWellSpacing = Double.parseDouble(props.getProperty(PlateFitterUI.WELL_SPACING));
         this.inputDirectory = inputDirectory;
         this.outputDirectory = outputDirectory;
     }
@@ -61,12 +65,12 @@ public class AnalysePlate {
             fitter.doFit();
             double[] p = fitter.getParams();
             System.out.println(String.format("X: %f, Y: %f, Theta: %f, Corr: %f", p[0], p[1], p[2], p[3]));
-            Overlay overlay = fitter.getPlateTemplate().drawOverlay(p[0], p[1], p[2]);
-            int nRois = overlay.size();
+            LinkedList<Roi> rois = fitter.getPlateTemplate().drawRoi(p[0], p[1], p[2]);
+            int nRois = rois.size();
             int count = 1;
-            for (int i = 0; i < nRois; i++) {
-                if (overlay.get(i).getProperty(Plate.PLATE_COMPONENT).contentEquals(Plate.SHRUNK_WELL)) {
-                    Roi well = overlay.get(i);
+            for (int i = nRois - 1; i >= 0; i--) {
+                if (rois.get(i).getProperty(Plate.PLATE_COMPONENT).contentEquals(Plate.SHRUNK_WELL)) {
+                    Roi well = rois.get(i);
                     imp.setRoi(well);
                     output.draw(well);
                     Rectangle wellBounds = well.getBounds();
