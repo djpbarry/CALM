@@ -157,11 +157,11 @@ public class BALM_Analysis extends GPUAnalyse {
 //    }
     protected ParticleArray findC1Particles() {
         ImageStack[] stacks = getStacks();
-        if (UserVariables.isGpu()) {
-            return cudaFindParticles(false, 0, 0, null);
-        } else {
+//        if (UserVariables.isGpu()) {
+//            return cudaFindParticles(false, 0, 0, null);
+//        } else {
             return findParticles(false, 0, 0, UserVariables.getCurveFitTol(), stacks[0], null, false, false, UserVariables.isFitC2());
-        }
+//        }
     }
 
     ParticleArray duplicateDetections(ParticleArray particles, int nDuplicates) {

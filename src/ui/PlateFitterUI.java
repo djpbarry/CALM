@@ -503,8 +503,8 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
         if (imp == null) {
             imp = IJ.openImage(filename);
         }
-        Plate plate = new Plate(rows, cols, wellRad/spatRes, xBuff/spatRes, yBuff/spatRes, interWellSpacing/spatRes, wellFraction);
-        imp.setOverlay(plate.drawOverlay(xLoc/spatRes, yLoc/spatRes, angle));
+        Plate plate = new Plate(rows, cols, wellRad / spatRes, xBuff / spatRes, yBuff / spatRes, interWellSpacing / spatRes, wellFraction);
+        imp.setOverlay(plate.drawOverlay(xLoc / spatRes, yLoc / spatRes, angle));
         imp.show();
     }//GEN-LAST:event_previewButtonActionPerformed
 
