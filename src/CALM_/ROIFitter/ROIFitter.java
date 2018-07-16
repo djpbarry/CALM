@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package CALM.ROIFitter;
+package CALM_.ROIFitter;
 
 import Image.ImageNormaliser;
 import Math.Optimisation.RoiFitter;

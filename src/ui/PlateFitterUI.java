@@ -5,7 +5,7 @@
  */
 package ui;
 
-import CALM.ROIFitter.AnalysePlate;
+import CALM_.ROIFitter.AnalysePlate;
 import IO.File.ImageFilter;
 import IO.PropertyWriter;
 import Math.Optimisation.Plate;
