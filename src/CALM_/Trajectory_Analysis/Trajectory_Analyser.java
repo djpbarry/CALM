@@ -16,8 +16,8 @@
  */
 package CALM_.Trajectory_Analysis;
 
-import CALM_.DataProcessing.Interpolator;
-import CALM_.DataProcessing.Smoother;
+import CALM.DataProcessing.Interpolator;
+import CALM.DataProcessing.Smoother;
 import IAClasses.Utils;
 import IO.DataReader;
 import IO.DataWriter;

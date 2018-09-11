@@ -3,9 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package CALM_.DataProcessing;
-
-import ij.IJ;
+package CALM.DataProcessing;
 
 /**
  *
