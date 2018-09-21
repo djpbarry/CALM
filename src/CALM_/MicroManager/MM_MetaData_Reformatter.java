@@ -253,7 +253,7 @@ public class MM_MetaData_Reformatter implements PlugIn {
                 slice[0] = Integer.parseInt(token.substring(dash,
                         token.indexOf("\"", dash)));
                 String frameLine = String.format("%s-%d-%d-%d\": {", FRAME_KEY, slice[2], channelMap.get(slice[1]), slice[0]);
-                output.append(String.format("%s\n", frameLine));
+                appendLineToOutput(output, String.format("%s\n", frameLine));
                 line = st.nextToken();
                 token = line.trim();
                 String key = "";
@@ -263,13 +263,13 @@ public class MM_MetaData_Reformatter implements PlugIn {
                 while (!token.startsWith("}") || nestedCount > 0) {
                     if (token.trim().endsWith("{")) {
                         nestedCount++;
-                        output.append(String.format("%s\n", line));
+                        appendLineToOutput(output, line);
                         line = st.nextToken();
                         token = line.trim();
                         continue;
                     } else if (token.trim().startsWith("}")) {
                         nestedCount--;
-                        output.append(String.format("%s\n", line));
+                        appendLineToOutput(output, line);
                         line = st.nextToken();
                         token = line.trim();
                         continue;
@@ -279,7 +279,7 @@ public class MM_MetaData_Reformatter implements PlugIn {
                             valueArray = false;
                         } else {
                             valueBuffer.append(token.trim().replaceAll("\"", ""));
-                            output.append(String.format("%s\n", line));
+                            appendLineToOutput(output, line);
                             line = st.nextToken();
                             token = line.trim();
                             continue;
@@ -292,7 +292,7 @@ public class MM_MetaData_Reformatter implements PlugIn {
                         key = key.replaceAll("\"", "");
                         if (token.trim().endsWith("[")) {
                             valueArray = true;
-                            output.append(String.format("%s\n", line));
+                            appendLineToOutput(output, line);
                             line = st.nextToken();
                             token = line.trim();
                             continue;
@@ -304,7 +304,7 @@ public class MM_MetaData_Reformatter implements PlugIn {
                     } else {
                         line = token;
                     }
-                    output.append(String.format("%s\n", line));
+                    appendLineToOutput(output, line);
                     line = st.nextToken();
                     token = line.trim();
                 }
@@ -314,10 +314,8 @@ public class MM_MetaData_Reformatter implements PlugIn {
         return output.toString();
     }
 
-    void appendLineToOutput(StringBuilder output, String line, StringTokenizer st, String token) {
+    void appendLineToOutput(StringBuilder output, String line) {
         output.append(String.format("%s\n", line));
-        line = st.nextToken();
-        token = line.trim();
     }
 
     void copyFile(File source, File dest) throws IOException {
