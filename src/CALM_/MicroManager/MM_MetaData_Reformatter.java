@@ -15,6 +15,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.commons.io.FileUtils;
@@ -39,7 +40,9 @@ public class MM_MetaData_Reformatter implements PlugIn {
     private final String USER_DATA = "UserData",
             PROP_VAL = "PropVal",
             PROP_TYPE = "PropType",
-            COORDS = "Coords";
+            COORDS = "Coords",
+            CHAN_INDEX = "ChannelIndex",
+            FRAME_KEY = "\"FrameKey";
 
     public MM_MetaData_Reformatter() {
 
@@ -47,7 +50,7 @@ public class MM_MetaData_Reformatter implements PlugIn {
 
     public void run(String args) {
         try {
-            inputDir = Utilities.getFolder(null, "Specify input directory", true);
+            inputDir = Utilities.getFolder(new File(IJ.getDirectory("current")), "Specify input directory", true);
             IJ.log(String.format("Root Directory: %s\n", inputDir.getAbsolutePath()));
             Iterator<File> metaIter = FileUtils.iterateFiles(inputDir, new MetaFileNameFilter(), TrueFileFilter.INSTANCE);
             while (metaIter.hasNext()) {
@@ -190,6 +193,133 @@ public class MM_MetaData_Reformatter implements PlugIn {
         return output;
     }
 
+    private String reorderChannels(String jsonData)
+            throws IOException {
+        StringTokenizer st = new StringTokenizer(jsonData, "\n");
+        ArrayList<ArrayList<Integer>> sliceCountsPerChannel = new ArrayList();
+        int[] slice = new int[3];
+        while (st.hasMoreTokens()) {
+            String token = st.nextToken().trim();
+            if (token.startsWith("\"FrameKey")) {
+                int dash = token.indexOf('-') + 1;
+                int nextDash = token.indexOf("-", dash);
+                slice[2] = Integer.parseInt(token.substring(dash, nextDash));
+                dash = nextDash + 1;
+                nextDash = token.indexOf("-", dash);
+                slice[1] = Integer.parseInt(token.substring(dash, nextDash));
+                dash = nextDash + 1;
+                slice[0] = Integer.parseInt(token.substring(dash,
+                        token.indexOf("\"", dash)));
+                while (sliceCountsPerChannel.size() <= slice[1]) {
+                    sliceCountsPerChannel.add(new ArrayList());
+                }
+                if (!(sliceCountsPerChannel.get(slice[1])).contains(slice[0])) {
+                    sliceCountsPerChannel.get(slice[1]).add(slice[0]);
+                }
+            }
+        }
+        int maxCount = -1;
+        int maxSliceIndex = -1;
+        for (int c = 0; c < sliceCountsPerChannel.size(); c++) {
+            ArrayList<Integer> sliceCount = sliceCountsPerChannel.get(c);
+            if (sliceCount.size() > maxCount) {
+                maxCount = sliceCount.size();
+                maxSliceIndex = c;
+            }
+        }
+        LinkedHashMap<Integer, Integer> channelMap = new LinkedHashMap();
+        for (int c = 0; c < sliceCountsPerChannel.size(); c++) {
+            if (c == 0) {
+                channelMap.put(0, maxSliceIndex);
+            } else if (c == maxSliceIndex) {
+                channelMap.put(maxSliceIndex, 0);
+            } else {
+                channelMap.put(c, c);
+            }
+        }
+        st = new StringTokenizer(jsonData, "\n");
+        StringBuilder output = new StringBuilder();
+        while (st.hasMoreTokens()) {
+            String line = st.nextToken();
+            String token = line.trim();
+            if (token.startsWith(FRAME_KEY)) {
+                int dash = token.indexOf('-') + 1;
+                int nextDash = token.indexOf("-", dash);
+                slice[2] = Integer.parseInt(token.substring(dash, nextDash));
+                dash = nextDash + 1;
+                nextDash = token.indexOf("-", dash);
+                slice[1] = Integer.parseInt(token.substring(dash, nextDash));
+                dash = nextDash + 1;
+                slice[0] = Integer.parseInt(token.substring(dash,
+                        token.indexOf("\"", dash)));
+                String frameLine = String.format("%s-%d-%d-%d\": {", FRAME_KEY, slice[2], channelMap.get(slice[1]), slice[0]);
+                output.append(String.format("%s\n", frameLine));
+                line = st.nextToken();
+                token = line.trim();
+                String key = "";
+                StringBuilder valueBuffer = new StringBuilder();
+                boolean valueArray = false;
+                int nestedCount = 0;
+                while (!token.startsWith("}") || nestedCount > 0) {
+                    if (token.trim().endsWith("{")) {
+                        nestedCount++;
+                        output.append(String.format("%s\n", line));
+                        line = st.nextToken();
+                        token = line.trim();
+                        continue;
+                    } else if (token.trim().startsWith("}")) {
+                        nestedCount--;
+                        output.append(String.format("%s\n", line));
+                        line = st.nextToken();
+                        token = line.trim();
+                        continue;
+                    }
+                    if (valueArray || token.trim().equals("],")) {
+                        if (token.trim().equals("],")) {
+                            valueArray = false;
+                        } else {
+                            valueBuffer.append(token.trim().replaceAll("\"", ""));
+                            output.append(String.format("%s\n", line));
+                            line = st.nextToken();
+                            token = line.trim();
+                            continue;
+                        }
+                    } else {
+                        int colon = token.indexOf(':');
+                        key = token.substring(1, colon).trim();
+                        valueBuffer.setLength(0);
+                        valueBuffer.append(token.substring(colon + 1, token.length() - 1).trim().replaceAll("\"", ""));
+                        key = key.replaceAll("\"", "");
+                        if (token.trim().endsWith("[")) {
+                            valueArray = true;
+                            output.append(String.format("%s\n", line));
+                            line = st.nextToken();
+                            token = line.trim();
+                            continue;
+                        }
+                    }
+                    String value = valueBuffer.toString();
+                    if (key.equals(CHAN_INDEX)) {
+                        line = String.format("\"%s\": %d", CHAN_INDEX, channelMap.get(Integer.parseInt(value)));
+                    } else {
+                        line = token;
+                    }
+                    output.append(String.format("%s\n", line));
+                    line = st.nextToken();
+                    token = line.trim();
+                }
+            }
+            output.append(String.format("%s\n", line));
+        }
+        return output.toString();
+    }
+
+    void appendLineToOutput(StringBuilder output, String line, StringTokenizer st, String token) {
+        output.append(String.format("%s\n", line));
+        line = st.nextToken();
+        token = line.trim();
+    }
+
     void copyFile(File source, File dest) throws IOException {
         if (dest.exists()) {
             IJ.log("Backup already exists - skipping backup");
@@ -204,7 +334,7 @@ public class MM_MetaData_Reformatter implements PlugIn {
             return;
         }
         String data = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-        List formattedData = reformatJSONData(data);
+        List formattedData = reformatJSONData(reorderChannels(data));
         Files.write(output.toPath(), formattedData, StandardOpenOption.CREATE);
     }
 

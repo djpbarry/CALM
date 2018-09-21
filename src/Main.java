@@ -1,5 +1,6 @@
 
-import CALM_.ROIFitter.Plate_Analyser;
+import CALM_.MicroManager.MM_MetaData_Reformatter;
+import UtilClasses.GenUtils;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -12,8 +13,13 @@ import CALM_.ROIFitter.Plate_Analyser;
  */
 public class Main {
 
-//    public static void main(String[] args) {
-//        (new Plate_Analyser()).run(null);
-//        System.exit(0);
-//    }
+    public static void main(String[] args) {
+        (new MM_MetaData_Reformatter()).run(null);
+        try{
+//            ImagePlus[] imp = BF.openImagePlus("D:\\debugging\\mm\\Untitled_2\\Cleaned_Untitled_2_MMStack_Pos0_metadata.txt");
+        } catch (Exception e){
+            GenUtils.logError(e, "");
+        }
+        System.exit(0);
+    }
 }

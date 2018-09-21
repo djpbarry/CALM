@@ -14,9 +14,9 @@ import ui.PlateFitterUI;
  */
 public class Plate_Analyser implements PlugIn {
 
-    public static void main(String args[]) {
-        (new Plate_Analyser()).run(null);
-    }
+//    public static void main(String args[]) {
+//        (new Plate_Analyser()).run(null);
+//    }
 
     public void run(String args) {
         java.awt.EventQueue.invokeLater(new Runnable() {
