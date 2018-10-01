@@ -21,6 +21,7 @@ import CALM.DataProcessing.Smoother;
 import IAClasses.Utils;
 import IO.DataReader;
 import IO.DataWriter;
+import Trajectory.DiffusionAnalysis.DiffusionAnalyser;
 import UtilClasses.GenUtils;
 import UtilClasses.GenVariables;
 import UtilClasses.Utilities;
@@ -43,13 +44,14 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  */
 public class Trajectory_Analyser implements PlugIn {
 
-    private File inputFile = new File("D:\\OneDrive - The Francis Crick Institute\\Working Data\\Ultanir\\TrkB\\Manual tracking");
+    private File inputFile = new File("D:\\OneDrive - The Francis Crick Institute\\Working Data\\Sahai\\Danielle");
     private static double minVel = 0.01;
     private static double minDist = 0.0;
     private static double framesPerSec = 3.0;
+    private static int minPointsForMSD = 10;
     private static int smoothingWindow = 1;
     private static boolean smooth = false, interpolate = false;
-    private static int INPUT_X_INDEX = 4, INPUT_Y_INDEX = 5, INPUT_ID_INDEX = 2, INPUT_FRAME_INDEX = 8;
+    private static int INPUT_X_INDEX = 3, INPUT_Y_INDEX = 4, INPUT_ID_INDEX = 1, INPUT_FRAME_INDEX = 7;
     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
     private final int V_X = 0, V_Y = 1, V_M = 2, V_Th = 3, V_F = 4, V_ID = 5, V_D = 6, V_T = 7;
     private final String TITLE = "Trajectory Analysis";
@@ -98,20 +100,28 @@ public class Trajectory_Analyser implements PlugIn {
                         new String[]{headingsArray[INPUT_X_INDEX], headingsArray[INPUT_Y_INDEX],
                             headingsArray[INPUT_FRAME_INDEX], headingsArray[INPUT_ID_INDEX]});
             }
+            IJ.log("Calculating instantaneous velocities...");
             double[][][] vels = calcInstVels(smoothedData, _X_, _Y_, _T_);
             IJ.log("Calculating mean velocities...");
             double[][] meanVels = calcMeanVels(vels, minVel);
             IJ.log("Analysing runs...");
             double[][][] runLengths = calcRunLengths(vels, minVel);
+            IJ.log("Analysing mean square displacements...");
+            double[][][] msds = calcMSDs(smoothedData, minPointsForMSD, framesPerSec);
             IJ.log("Saving outputs...");
             saveData(vels, "Instantaneous_Velocities.csv",
                     new String[]{String.format("X Vel (%s)", MIC_PER_SEC),
                         String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
                         String.format("Theta (%c)", IJ.degreeSymbol),
                         "Time (frames)", "Track ID", "Distance", "Time (s)"});
+            saveData(msds, "Mean_Square_Displacements.csv",
+                    new String[]{String.format("Time Step (s)"),
+                        String.format("Mean Square Displacement (%s^2)", MIC), String.format("Standard Deviation"),
+                        String.format("N")});
             saveMeanVels(meanVels);
             saveRunLengths(runLengths);
         } catch (IOException e) {
+            GenUtils.logError(e, null);
         }
         IJ.log("Done.");
     }
@@ -269,6 +279,27 @@ public class Trajectory_Analyser implements PlugIn {
             }
         }
         return output;
+    }
+
+    private double[][][] calcMSDs(double[][][] data, int minPointsForMSD, double framesPerSec) {
+        double[][][] msds = new double[data.length][][];
+        for (int traj = 0; traj < data.length; traj++) {
+            double[][] currentData = data[traj];
+            double[][] tempData = new double[3][currentData.length];
+            for (int time = 0; time < currentData.length; time++) {
+                tempData[0][time] = currentData[time][_X_];
+                tempData[1][time] = currentData[time][_Y_];
+                tempData[2][time] = currentData[time][_T_];
+            }
+            double[][] currentMSD = (new DiffusionAnalyser(false)).calcMSD(-1, -1, tempData, minPointsForMSD, framesPerSec);
+            msds[traj] = new double[currentMSD[0].length][4];
+            for (int time = 0; time < currentMSD[0].length; time++) {
+                for (int i = 0; i < 4; i++) {
+                    msds[traj][time][i] = currentMSD[i][time];
+                }
+            }
+        }
+        return msds;
     }
 
     private void addRun(DescriptiveStatistics mVel, DescriptiveStatistics xVel, DescriptiveStatistics yVel, double time, ArrayList<double[]> current, int id, double dist, double netDist) {
