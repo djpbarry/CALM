@@ -33,6 +33,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -107,17 +108,14 @@ public class Trajectory_Analyser implements PlugIn {
             IJ.log("Analysing runs...");
             double[][][] runLengths = calcRunLengths(vels, minVel);
             IJ.log("Analysing mean square displacements...");
-            double[][][] msds = calcMSDs(smoothedData, minPointsForMSD, framesPerSec);
+            double[][] msds = calcMSDs(smoothedData, minPointsForMSD, framesPerSec);
             IJ.log("Saving outputs...");
             saveData(vels, "Instantaneous_Velocities.csv",
                     new String[]{String.format("X Vel (%s)", MIC_PER_SEC),
                         String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
                         String.format("Theta (%c)", IJ.degreeSymbol),
                         "Time (frames)", "Track ID", "Distance", "Time (s)"});
-            saveData(msds, "Mean_Square_Displacements.csv",
-                    new String[]{String.format("Time Step (s)"),
-                        String.format("Mean Square Displacement (%s^2)", MIC), String.format("Standard Deviation"),
-                        String.format("N")});
+            saveMSDs(msds);
             saveMeanVels(meanVels);
             saveRunLengths(runLengths);
         } catch (IOException e) {
@@ -281,8 +279,17 @@ public class Trajectory_Analyser implements PlugIn {
         return output;
     }
 
-    private double[][][] calcMSDs(double[][][] data, int minPointsForMSD, double framesPerSec) {
-        double[][][] msds = new double[data.length][][];
+    private double[][] calcMSDs(double[][][] data, int minPointsForMSD, double framesPerSec) {
+        int maxLength = -1;
+        for (int traj = 0; traj < data.length; traj++) {
+            if (data[traj].length > maxLength) {
+                maxLength = data[traj].length;
+            }
+        }
+        double[][] msds = new double[maxLength][data.length * 3 + 1];
+        for (double[] d : msds) {
+            Arrays.fill(d, Double.NaN);
+        }
         for (int traj = 0; traj < data.length; traj++) {
             double[][] currentData = data[traj];
             double[][] tempData = new double[3][currentData.length];
@@ -292,10 +299,10 @@ public class Trajectory_Analyser implements PlugIn {
                 tempData[2][time] = currentData[time][_T_];
             }
             double[][] currentMSD = (new DiffusionAnalyser(false)).calcMSD(-1, -1, tempData, minPointsForMSD, framesPerSec);
-            msds[traj] = new double[currentMSD[0].length][4];
             for (int time = 0; time < currentMSD[0].length; time++) {
-                for (int i = 0; i < 4; i++) {
-                    msds[traj][time][i] = currentMSD[i][time];
+                msds[time][0] = currentMSD[0][time];
+                for (int i = 1; i < 4; i++) {
+                    msds[time][traj * 3 + i] = currentMSD[i][time];
                 }
             }
         }
@@ -351,6 +358,19 @@ public class Trajectory_Analyser implements PlugIn {
             double[][] v = runs[i];
             DataWriter.saveValues(v, velData, null, null, true);
         }
+    }
+
+    void saveMSDs(double[][] msds) throws IOException {
+        String[] headings = new String[msds[0].length];
+        headings[0] = "Time Step (s)";
+        for (int i = 1; i < msds[0].length; i += 3) {
+            int j = (i - 1) / 3;
+            headings[i] = String.format("Mean Square Displacement (%s^2)_%d", MIC, j);
+            headings[i + 1] = String.format("Standard Deviation_%d", j);
+            headings[i + 2] = String.format("N_%d", j);
+        }
+        saveData(new double[][][]{msds}, "Mean_Square_Displacements.csv",
+                headings);
     }
 
     boolean showDialog(String[] headings) {
