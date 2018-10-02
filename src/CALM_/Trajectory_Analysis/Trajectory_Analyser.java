@@ -59,19 +59,29 @@ public class Trajectory_Analyser implements PlugIn {
     private final String MIC = String.format("%cm", IJ.micronSymbol);
     private final String MIC_PER_SEC = String.format("%s/s", MIC);
     private LinkedHashMap<Integer, Integer> idIndexMap;
+    private final boolean batch;
+
+    public Trajectory_Analyser(boolean batch) {
+        this.batch = batch;
+    }
 
     public Trajectory_Analyser() {
-
+        this(false);
     }
 //D:\OneDrive - The Francis Crick Institute\Working Data\Ultanir\TrkB\Manual tracking
 
-    public void run(String args) {
+    public void run(String inputFileName) {
         IJ.log(String.format("Running %s\n", TITLE));
+        String[] headingsArray = getFileHeadings(inputFile);
         double[][] inputData;
         ArrayList<String> headings = new ArrayList();
         ArrayList<String> labels = new ArrayList();
         try {
-            inputFile = Utilities.getFile(inputFile, "Select input file", true);
+            if (!batch) {
+                inputFile = Utilities.getFile(inputFile, "Select input file", true);
+            } else {
+                inputFile = new File(inputFileName);
+            }
             IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
             inputData = DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, headings, labels);
             IJ.log("Parsing data...");
@@ -80,9 +90,7 @@ public class Trajectory_Analyser implements PlugIn {
             return;
         }
         File parentOutputDirectory = new File(GenUtils.openResultsDirectory(String.format("%s%s%s_%s", inputFile.getParent(), File.separator, TITLE, inputFile.getName())));
-        String[] headingsArray = new String[headings.size()];
-        headingsArray = headings.toArray(headingsArray);
-        if (!showDialog(headingsArray)) {
+        if (!batch && !showDialog(headingsArray)) {
             return;
         }
         try {
@@ -369,6 +377,21 @@ public class Trajectory_Analyser implements PlugIn {
         }
         saveData(new double[][][]{msds}, "Mean_Square_Displacements.csv",
                 headings, parentOutputDirectory);
+    }
+
+    public String[] getFileHeadings(File inputFile) {
+        ArrayList<String> headings = new ArrayList();
+        ArrayList<String> labels = new ArrayList();
+        try {
+            IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
+            DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, headings, labels);
+            IJ.log("Parsing data...");
+        } catch (Exception e) {
+            GenUtils.error("Cannot read input file.");
+            return null;
+        }
+        String[] headingsArray = new String[headings.size()];
+        return headings.toArray(headingsArray);
     }
 
     boolean showDialog(String[] headings) {
