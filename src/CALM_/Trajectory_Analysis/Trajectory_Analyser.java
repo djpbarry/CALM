@@ -79,6 +79,7 @@ public class Trajectory_Analyser implements PlugIn {
             GenUtils.error("Cannot read input file.");
             return;
         }
+        File parentOutputDirectory = new File(GenUtils.openResultsDirectory(String.format("%s%s%s_%s", inputFile.getParent(), File.separator, TITLE, inputFile.getName())));
         String[] headingsArray = new String[headings.size()];
         headingsArray = headings.toArray(headingsArray);
         if (!showDialog(headingsArray)) {
@@ -92,14 +93,14 @@ public class Trajectory_Analyser implements PlugIn {
                 interData = Interpolator.interpolateLinearly(processedInputData, _T_, new boolean[]{true, true, true, false});
                 saveData(interData, "Interpolated_Coordinates.csv",
                         new String[]{headingsArray[INPUT_X_INDEX], headingsArray[INPUT_Y_INDEX],
-                            headingsArray[INPUT_FRAME_INDEX], headingsArray[INPUT_ID_INDEX]});
+                            headingsArray[INPUT_FRAME_INDEX], headingsArray[INPUT_ID_INDEX]}, parentOutputDirectory);
             }
             double[][][] smoothedData = interData;
             if (smooth) {
                 smoothedData = Smoother.smoothData(interData, smoothingWindow, new boolean[]{true, true, false, false});
                 saveData(smoothedData, "Smoothed_Coordinates.csv",
                         new String[]{headingsArray[INPUT_X_INDEX], headingsArray[INPUT_Y_INDEX],
-                            headingsArray[INPUT_FRAME_INDEX], headingsArray[INPUT_ID_INDEX]});
+                            headingsArray[INPUT_FRAME_INDEX], headingsArray[INPUT_ID_INDEX]}, parentOutputDirectory);
             }
             IJ.log("Calculating instantaneous velocities...");
             double[][][] vels = calcInstVels(smoothedData, _X_, _Y_, _T_);
@@ -114,10 +115,10 @@ public class Trajectory_Analyser implements PlugIn {
                     new String[]{String.format("X Vel (%s)", MIC_PER_SEC),
                         String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
                         String.format("Theta (%c)", IJ.degreeSymbol),
-                        "Time (frames)", "Track ID", "Distance", "Time (s)"});
-            saveMSDs(msds);
-            saveMeanVels(meanVels);
-            saveRunLengths(runLengths);
+                        "Time (frames)", "Track ID", "Distance", "Time (s)"}, parentOutputDirectory);
+            saveMSDs(msds, parentOutputDirectory);
+            saveMeanVels(meanVels, parentOutputDirectory);
+            saveRunLengths(runLengths, parentOutputDirectory);
         } catch (IOException e) {
             GenUtils.logError(e, null);
         }
@@ -317,8 +318,7 @@ public class Trajectory_Analyser implements PlugIn {
         }
     }
 
-    void saveData(double[][][] data, String filename, String[] headings) throws IOException {
-        File dir = inputFile.getParentFile();
+    void saveData(double[][][] data, String filename, String[] headings, File dir) throws IOException {
         File file = new File(String.format("%s%s%s", dir, File.separator, filename));
         if (file.exists()) {
             file.delete();
@@ -332,8 +332,7 @@ public class Trajectory_Analyser implements PlugIn {
         }
     }
 
-    void saveMeanVels(double[][] meanVels) throws IOException {
-        File dir = inputFile.getParentFile();
+    void saveMeanVels(double[][] meanVels, File dir) throws IOException {
         File velData = new File(String.format("%s%s%s", dir, File.separator, "Mean_Velocities.csv"));
         if (velData.exists()) {
             velData.delete();
@@ -345,8 +344,7 @@ public class Trajectory_Analyser implements PlugIn {
         DataWriter.saveValues(meanVels, velData, new String[]{"Track ID", String.format("Mag (%s)", MIC_PER_SEC), String.format("Theta (%c)", IJ.degreeSymbol)}, rowLabels, false);
     }
 
-    void saveRunLengths(double[][][] runs) throws IOException {
-        File dir = inputFile.getParentFile();
+    void saveRunLengths(double[][][] runs, File dir) throws IOException {
         File velData = new File(String.format("%s%s%s", dir, File.separator, "Run_Lengths.csv"));
         if (velData.exists()) {
             velData.delete();
@@ -360,7 +358,7 @@ public class Trajectory_Analyser implements PlugIn {
         }
     }
 
-    void saveMSDs(double[][] msds) throws IOException {
+    void saveMSDs(double[][] msds, File parentOutputDirectory) throws IOException {
         String[] headings = new String[msds[0].length];
         headings[0] = "Time Step (s)";
         for (int i = 1; i < msds[0].length; i += 3) {
@@ -370,7 +368,7 @@ public class Trajectory_Analyser implements PlugIn {
             headings[i + 2] = String.format("N_%d", j);
         }
         saveData(new double[][][]{msds}, "Mean_Square_Displacements.csv",
-                headings);
+                headings, parentOutputDirectory);
     }
 
     boolean showDialog(String[] headings) {
