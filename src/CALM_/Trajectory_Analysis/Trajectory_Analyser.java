@@ -72,7 +72,6 @@ public class Trajectory_Analyser implements PlugIn {
 
     public void run(String inputFileName) {
         IJ.log(String.format("Running %s\n", TITLE));
-        String[] headingsArray = getFileHeadings(inputFile);
         double[][] inputData;
         ArrayList<String> headings = new ArrayList();
         ArrayList<String> labels = new ArrayList();
@@ -90,6 +89,7 @@ public class Trajectory_Analyser implements PlugIn {
             return;
         }
         File parentOutputDirectory = new File(GenUtils.openResultsDirectory(String.format("%s%s%s_%s", inputFile.getParent(), File.separator, TITLE, inputFile.getName())));
+        String[] headingsArray = getFileHeadings(inputFile);
         if (!batch && !showDialog(headingsArray)) {
             return;
         }
