@@ -45,7 +45,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
  */
 public class Trajectory_Analyser implements PlugIn {
 
-    private File inputFile = new File("D:\\OneDrive - The Francis Crick Institute\\Working Data\\Sahai\\Danielle");
+    private static File inputFile;
     private static double minVel = 0.01;
     private static double minDist = 0.0;
     private static double framesPerSec = 3.0;

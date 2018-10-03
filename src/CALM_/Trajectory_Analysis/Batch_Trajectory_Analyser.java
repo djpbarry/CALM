@@ -17,8 +17,9 @@ import java.io.File;
  */
 public class Batch_Trajectory_Analyser implements PlugIn {
 
+    private static File inputDir;
+
     public void run(String args) {
-        File inputDir = null;
         try {
             inputDir = Utilities.getFolder(null, "Select input folder", false);
         } catch (Exception e) {
