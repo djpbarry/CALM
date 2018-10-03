@@ -39,7 +39,7 @@ public class Summarise_Trajectory_MSD_Data implements PlugIn {
         Collection<File> fileList = FileUtils.listFiles(inputDir, new String[]{"csv"}, true);
         ArrayList<ArrayList<ArrayList<Double>>> rollingAverager = new ArrayList();
         ArrayList<Double> timesteps = new ArrayList();
-        File outputFile = new File(String.format("%s%s%s", inputDir.getAbsolutePath(), File.separator, "Trajectory_Summary.csv"));
+        File outputFile = new File(String.format("%s%s%s%s", inputDir.getAbsolutePath(), File.separator, inputDir.getName(), "_MSD_Data_Summary.csv"));
         for (File f : fileList) {
             if (!f.getName().contentEquals(Trajectory_Analyser.MSD)) {
                 continue;
