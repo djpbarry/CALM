@@ -24,7 +24,7 @@ import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class Summarise_Trajectory_Data implements PlugIn {
+public class Summarise_Trajectory_MSD_Data implements PlugIn {
 
     public void run(String args) {
         File inputDir = null;

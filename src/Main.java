@@ -1,5 +1,5 @@
 
-import CALM_.Trajectory_Analysis.Summarise_Trajectory_Data;
+import CALM_.Trajectory_Analysis.Summarise_Trajectory_MSD_Data;
 import UtilClasses.GenUtils;
 
 /*
@@ -14,7 +14,7 @@ import UtilClasses.GenUtils;
 public class Main {
 
     public static void main(String[] args) {
-        (new Summarise_Trajectory_Data()).run(null);
+        (new Summarise_Trajectory_MSD_Data()).run(null);
         try{
 //            ImagePlus[] imp = BF.openImagePlus("D:\\debugging\\mm\\Untitled_2\\Cleaned_Untitled_2_MMStack_Pos0_metadata.txt");
         } catch (Exception e){
