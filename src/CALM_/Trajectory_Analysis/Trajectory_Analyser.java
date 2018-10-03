@@ -56,10 +56,11 @@ public class Trajectory_Analyser implements PlugIn {
     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
     private final int V_X = 0, V_Y = 1, V_M = 2, V_Th = 3, V_F = 4, V_ID = 5, V_D = 6, V_T = 7;
     private final String TITLE = "Trajectory Analysis";
-    private final String MIC = String.format("%cm", IJ.micronSymbol);
+    public static final String MIC = String.format("%cm", IJ.micronSymbol);
     private final String MIC_PER_SEC = String.format("%s/s", MIC);
     private LinkedHashMap<Integer, Integer> idIndexMap;
     private final boolean batch;
+    public static final String MSD = "Mean_Square_Displacements.csv";
 
     public Trajectory_Analyser(boolean batch) {
         this.batch = batch;
@@ -326,7 +327,7 @@ public class Trajectory_Analyser implements PlugIn {
         }
     }
 
-    void saveData(double[][][] data, String filename, String[] headings, File dir) throws IOException {
+    protected void saveData(double[][][] data, String filename, String[] headings, File dir) throws IOException {
         File file = new File(String.format("%s%s%s", dir, File.separator, filename));
         if (file.exists()) {
             file.delete();
@@ -375,7 +376,7 @@ public class Trajectory_Analyser implements PlugIn {
             headings[i + 1] = String.format("Standard Deviation_%d", j);
             headings[i + 2] = String.format("N_%d", j);
         }
-        saveData(new double[][][]{msds}, "Mean_Square_Displacements.csv",
+        saveData(new double[][][]{msds}, MSD,
                 headings, parentOutputDirectory);
     }
 
