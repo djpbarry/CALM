@@ -29,7 +29,7 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
  */
 public class MM_MetaData_Reformatter implements PlugIn {
 
-    private File inputDir;
+    private static File inputDir;
     private String ext = "txt";
     private String tif = "tif";
     private String tiff = "tiff";
@@ -50,7 +50,7 @@ public class MM_MetaData_Reformatter implements PlugIn {
 
     public void run(String args) {
         try {
-            inputDir = Utilities.getFolder(new File(IJ.getDirectory("current")), "Specify input directory", true);
+            inputDir = Utilities.getFolder(inputDir, "Specify input directory", true);
             IJ.log(String.format("Root Directory: %s\n", inputDir.getAbsolutePath()));
             Iterator<File> metaIter = FileUtils.iterateFiles(inputDir, new MetaFileNameFilter(), TrueFileFilter.INSTANCE);
             while (metaIter.hasNext()) {
