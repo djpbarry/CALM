@@ -54,7 +54,7 @@ public class Trajectory_Analyser implements PlugIn {
     private static boolean smooth = false, interpolate = false;
     private static int INPUT_X_INDEX = 3, INPUT_Y_INDEX = 4, INPUT_ID_INDEX = 1, INPUT_FRAME_INDEX = 7;
     private final int _X_ = 0, _Y_ = 1, _T_ = 2, _ID_ = 3;
-    private final int V_X = 0, V_Y = 1, V_M = 2, V_Th = 3, V_F = 4, V_ID = 5, V_D = 6, V_T = 7;
+    private final int V_Fr = 0, V_X = 1, V_Y = 2, V_M = 3, V_Th = 4, V_F = 5, V_ID = 6, V_D = 7, V_T = 8;
     private final String TITLE = "Trajectory Analysis";
     public static final String MIC = String.format("%cm", IJ.micronSymbol);
     private final String MIC_PER_SEC = String.format("%s/s", MIC);
@@ -75,24 +75,29 @@ public class Trajectory_Analyser implements PlugIn {
     public void run(String inputFileName) {
         IJ.log(String.format("Running %s\n", TITLE));
         double[][] inputData;
-        ArrayList<String> headings = new ArrayList();
-        ArrayList<String> labels = labelledData ? new ArrayList() : null;
         try {
             if (!batch) {
                 inputFile = Utilities.getFile(inputFile, "Select input file", true);
             } else {
                 inputFile = new File(inputFileName);
             }
-            IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
-            inputData = DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, headings, labels);
-            IJ.log("Parsing data...");
         } catch (Exception e) {
             GenUtils.error("Cannot read input file.");
             return;
         }
         File parentOutputDirectory = new File(GenUtils.openResultsDirectory(String.format("%s%s%s_%s", inputFile.getParent(), File.separator, TITLE, inputFile.getName())));
-        String[] headingsArray = getFileHeadings(inputFile);
+        String[] headingsArray = getFileHeadings(inputFile, false);
         if (!batch && !showDialog(headingsArray)) {
+            return;
+        }
+        headingsArray = getFileHeadings(inputFile, labelledData);
+        ArrayList<String> labels = labelledData ? new ArrayList() : null;
+        try {
+            IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
+            inputData = DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, new ArrayList(), labels);
+            IJ.log("Parsing data...");
+        } catch (Exception e) {
+            GenUtils.error("Cannot read input file.");
             return;
         }
         try {
@@ -122,7 +127,7 @@ public class Trajectory_Analyser implements PlugIn {
             double[][] msds = calcMSDs(smoothedData, minPointsForMSD, framesPerSec);
             IJ.log("Saving outputs...");
             saveData(vels, "Instantaneous_Velocities.csv",
-                    new String[]{String.format("X Vel (%s)", MIC_PER_SEC),
+                    new String[]{"Frame No.", String.format("X Vel (%s)", MIC_PER_SEC),
                         String.format("Y Vel (%s)", MIC_PER_SEC), String.format("Mag (%s)", MIC_PER_SEC),
                         String.format("Theta (%c)", IJ.degreeSymbol),
                         "Time (frames)", "Track ID", "Distance", "Time (s)"}, parentOutputDirectory);
@@ -177,21 +182,24 @@ public class Trajectory_Analyser implements PlugIn {
         double[][][] vels = new double[a][][];
         for (int i = 0; i < a; i++) {
             int b = data[i].length;
-            vels[i] = new double[b - 1][8];
+            vels[i] = new double[b][9];
+            Arrays.fill(vels[i][0], 0.0);
+            vels[i][0][V_ID] = idIndexMap.get(i);
             for (int j = 1; j < b; j++) {
                 double x2 = data[i][j][X_INDEX];
                 double x1 = data[i][j - 1][X_INDEX];
                 double y2 = data[i][j][Y_INDEX];
                 double y1 = data[i][j - 1][Y_INDEX];
                 double dt = data[i][j][FRAME_INDEX] - data[i][j - 1][FRAME_INDEX];
-                vels[i][j - 1][V_X] = framesPerSec * (x2 - x1) / dt;
-                vels[i][j - 1][V_Y] = framesPerSec * (y2 - y1) / dt;
-                vels[i][j - 1][V_D] = Utils.calcDistance(x1, y1, x2, y2);
-                vels[i][j - 1][V_M] = framesPerSec * vels[i][j - 1][V_D] / dt;
-                vels[i][j - 1][V_Th] = Utils.arcTan(x2 - x1, y2 - y1);
-                vels[i][j - 1][V_F] = dt;
-                vels[i][j - 1][V_ID] = idIndexMap.get(i);
-                vels[i][j - 1][V_T] = dt / framesPerSec;
+                vels[i][j][V_Fr] = data[i][j][FRAME_INDEX];
+                vels[i][j][V_X] = framesPerSec * (x2 - x1) / dt;
+                vels[i][j][V_Y] = framesPerSec * (y2 - y1) / dt;
+                vels[i][j][V_D] = Utils.calcDistance(x1, y1, x2, y2);
+                vels[i][j][V_M] = framesPerSec * vels[i][j][V_D] / dt;
+                vels[i][j][V_Th] = Utils.arcTan(x2 - x1, y2 - y1);
+                vels[i][j][V_F] = dt;
+                vels[i][j][V_ID] = idIndexMap.get(i);
+                vels[i][j][V_T] = dt / framesPerSec;
             }
         }
         return vels;
@@ -390,7 +398,7 @@ public class Trajectory_Analyser implements PlugIn {
                 headings, parentOutputDirectory);
     }
 
-    public String[] getFileHeadings(File inputFile) {
+    public String[] getFileHeadings(File inputFile, boolean labelledData) {
         ArrayList<String> headings = new ArrayList();
         ArrayList<String> labels = labelledData ? new ArrayList() : null;
         try {
@@ -419,7 +427,7 @@ public class Trajectory_Analyser implements PlugIn {
         gd.addChoice("Specify Column for Y coordinates:", headings, defaultY);
         gd.addChoice("Specify Column for Frame Number:", headings, defaultF);
         gd.addChoice("Specify Column for Track ID:", headings, defaultI);
-        gd.addCheckboxGroup(1, 2, new String[]{"Smooth Data", "Interpolate Data", "Labelled Data"}, new boolean[]{smooth, interpolate, labelledData});
+        gd.addCheckboxGroup(1, 3, new String[]{"Smooth Data", "Interpolate Data", "Labelled Data"}, new boolean[]{smooth, interpolate, labelledData});
         gd.showDialog();
         if (!gd.wasOKed()) {
             return false;

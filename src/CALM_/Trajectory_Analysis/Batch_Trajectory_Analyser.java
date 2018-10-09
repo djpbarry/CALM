@@ -30,7 +30,7 @@ public class Batch_Trajectory_Analyser implements PlugIn {
         }
         File[] fileList = inputDir.listFiles(new FileExtensionFilter(new String[]{"csv"}));
         Trajectory_Analyser ta = new Trajectory_Analyser(true);
-        ta.showDialog(ta.getFileHeadings(fileList[0]));
+        ta.showDialog(ta.getFileHeadings(fileList[0],false));
         for (File f : fileList) {
             ta.run(f.getAbsolutePath());
         }
