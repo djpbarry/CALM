@@ -61,6 +61,7 @@ public class Trajectory_Analyser implements PlugIn {
     private LinkedHashMap<Integer, Integer> idIndexMap;
     private final boolean batch;
     public static final String MSD = "Mean_Square_Displacements.csv";
+    private static boolean labelledData = true;
 
     public Trajectory_Analyser(boolean batch) {
         this.batch = batch;
@@ -75,7 +76,7 @@ public class Trajectory_Analyser implements PlugIn {
         IJ.log(String.format("Running %s\n", TITLE));
         double[][] inputData;
         ArrayList<String> headings = new ArrayList();
-        ArrayList<String> labels = new ArrayList();
+        ArrayList<String> labels = labelledData ? new ArrayList() : null;
         try {
             if (!batch) {
                 inputFile = Utilities.getFile(inputFile, "Select input file", true);
@@ -226,6 +227,9 @@ public class Trajectory_Analyser implements PlugIn {
             int id = idIndexMap.get(i);
             ArrayList<double[]> current = new ArrayList();
             int b = vels[i].length;
+            if (b < 1) {
+                continue;
+            }
             DescriptiveStatistics mVel = null;
             DescriptiveStatistics xVel = null;
             DescriptiveStatistics yVel = null;
@@ -302,6 +306,9 @@ public class Trajectory_Analyser implements PlugIn {
         }
         for (int traj = 0; traj < data.length; traj++) {
             double[][] currentData = data[traj];
+            if (currentData.length < 1) {
+                continue;
+            }
             double[][] tempData = new double[3][currentData.length];
             for (int time = 0; time < currentData.length; time++) {
                 tempData[0][time] = currentData[time][_X_];
@@ -309,6 +316,9 @@ public class Trajectory_Analyser implements PlugIn {
                 tempData[2][time] = currentData[time][_T_];
             }
             double[][] currentMSD = (new DiffusionAnalyser(false)).calcMSD(-1, -1, tempData, minPointsForMSD, framesPerSec);
+            if (currentMSD == null) {
+                continue;
+            }
             for (int time = 0; time < currentMSD[0].length; time++) {
                 msds[time][0] = currentMSD[0][time];
                 for (int i = 1; i < 4; i++) {
@@ -382,7 +392,7 @@ public class Trajectory_Analyser implements PlugIn {
 
     public String[] getFileHeadings(File inputFile) {
         ArrayList<String> headings = new ArrayList();
-        ArrayList<String> labels = new ArrayList();
+        ArrayList<String> labels = labelledData ? new ArrayList() : null;
         try {
             IJ.log(String.format("Reading %s...", inputFile.getAbsolutePath()));
             DataReader.readCSVFile(inputFile, CSVFormat.DEFAULT, headings, labels);
@@ -396,16 +406,20 @@ public class Trajectory_Analyser implements PlugIn {
     }
 
     boolean showDialog(String[] headings) {
+        String defaultX = INPUT_X_INDEX < headings.length ? headings[INPUT_X_INDEX] : headings[headings.length - 1];
+        String defaultY = INPUT_Y_INDEX < headings.length ? headings[INPUT_Y_INDEX] : headings[headings.length - 1];
+        String defaultF = INPUT_FRAME_INDEX < headings.length ? headings[INPUT_FRAME_INDEX] : headings[headings.length - 1];
+        String defaultI = INPUT_ID_INDEX < headings.length ? headings[INPUT_ID_INDEX] : headings[headings.length - 1];
         GenericDialog gd = new GenericDialog(TITLE);
         gd.addNumericField("Minimum Velocity", minVel, 3, 5, MIC_PER_SEC);
         gd.addNumericField("Minimum Distance", minDist, 3, 5, MIC);
         gd.addNumericField("Temporal Resolution", framesPerSec, 3, 5, "Hz");
         gd.addNumericField("Smoothing Window", smoothingWindow, 0, 5, "Frames");
-        gd.addChoice("Specify Column for X coordinates:", headings, headings[INPUT_X_INDEX]);
-        gd.addChoice("Specify Column for Y coordinates:", headings, headings[INPUT_Y_INDEX]);
-        gd.addChoice("Specify Column for Frame Number:", headings, headings[INPUT_FRAME_INDEX]);
-        gd.addChoice("Specify Column for Track ID:", headings, headings[INPUT_ID_INDEX]);
-        gd.addCheckboxGroup(1, 2, new String[]{"Smooth Data", "Interpolate Data"}, new boolean[]{smooth, interpolate});
+        gd.addChoice("Specify Column for X coordinates:", headings, defaultX);
+        gd.addChoice("Specify Column for Y coordinates:", headings, defaultY);
+        gd.addChoice("Specify Column for Frame Number:", headings, defaultF);
+        gd.addChoice("Specify Column for Track ID:", headings, defaultI);
+        gd.addCheckboxGroup(1, 2, new String[]{"Smooth Data", "Interpolate Data", "Labelled Data"}, new boolean[]{smooth, interpolate, labelledData});
         gd.showDialog();
         if (!gd.wasOKed()) {
             return false;
@@ -419,6 +433,7 @@ public class Trajectory_Analyser implements PlugIn {
         INPUT_ID_INDEX = gd.getNextChoiceIndex();
         smooth = gd.getNextBoolean();
         interpolate = gd.getNextBoolean();
+        labelledData = gd.getNextBoolean();
         return true;
     }
 }
