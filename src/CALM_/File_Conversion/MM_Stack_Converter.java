@@ -5,6 +5,7 @@
  */
 package CALM_.File_Conversion;
 
+import DateAndTime.Time;
 import IO.BioFormats.BioFormatsImg;
 import UtilClasses.GenUtils;
 import UtilClasses.Utilities;
@@ -13,6 +14,7 @@ import ij.ImagePlus;
 import ij.plugin.PlugIn;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -21,6 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 public class MM_Stack_Converter implements PlugIn {
 
     public void run(String args) {
+        LocalDateTime startTime = LocalDateTime.now();
         try {
             File inputDir = Utilities.getFolder(null, "Specify input directory", true);
             IJ.log(String.format("Input: %s", inputDir.getAbsolutePath()));
@@ -30,6 +33,7 @@ public class MM_Stack_Converter implements PlugIn {
             int i = -1;
             boolean valid = false;
             BioFormatsImg img = null;
+            IJ.log("Parsing metadata. This may take some time for large datasets.");
             while (!valid) {
                 i++;
                 img = new BioFormatsImg(fileList[i].getAbsolutePath());
@@ -39,14 +43,17 @@ public class MM_Stack_Converter implements PlugIn {
                 return;
             }
             int Ns = img.getSeriesCount();
-            for (int s = 1; s <= Ns; s++) {
-                IJ.log(String.format("Converting %s series %d", fileList[i].getName(), s));
+            for (int s = 0; s < Ns; s++) {
+                IJ.log(String.format("Reading %s series %d", fileList[i].getName(), s));
                 img.setImg(s);
                 ImagePlus imp = img.getImg();
-                IJ.saveAs(imp, "TIF", String.format("%s%s%s_S%d", outputDir, File.separator, fileList[i].getName(), s));
+                IJ.log(String.format("Writing %s series %d", fileList[i].getName(), s));
+                IJ.run(imp, "Bio-Formats Exporter", "save=" + String.format("%s%s%s_S%d.ome.tif", outputDir, File.separator, fileList[i].getName(), s) + " compression=Uncompressed");
             }
         } catch (InterruptedException | InvocationTargetException e) {
             GenUtils.logError(e, "Error opening directories.");
         }
+        IJ.log("Done");
+        IJ.log(Time.getDurationAsString(startTime));
     }
 }
