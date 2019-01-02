@@ -543,7 +543,7 @@ public class PlateFitterUI extends javax.swing.JFrame implements GUIMethods {
 //        });
 //    }
     public void setProperties(Properties p, Container container) {
-        PropertyExtractor.setProperties(p, container);
+        PropertyExtractor.setProperties(p, container, PropertyExtractor.WRITE);
     }
 
     public boolean setVariables() {

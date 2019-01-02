@@ -11,6 +11,7 @@ import UtilClasses.GenUtils;
 import UtilClasses.Utilities;
 import ij.IJ;
 import ij.ImagePlus;
+import ij.plugin.HyperStackConverter;
 import ij.plugin.PlugIn;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -45,8 +46,8 @@ public class MM_Stack_Converter implements PlugIn {
             int Ns = img.getSeriesCount();
             for (int s = 0; s < Ns; s++) {
                 IJ.log(String.format("Reading %s series %d", fileList[i].getName(), s));
-                img.setImg(s);
-                ImagePlus imp = img.getImg();
+                img.loadPixelData(s);
+                ImagePlus imp = HyperStackConverter.toHyperStack(img.getLoadedImage(), img.getChannelCount(), img.getSizeZ(), 1, "xyzct", "composite");
                 IJ.log(String.format("Writing %s series %d", fileList[i].getName(), s));
                 IJ.run(imp, "Bio-Formats Exporter", "save=" + String.format("%s%s%s_S%d.ome.tif", outputDir, File.separator, fileList[i].getName(), s) + " compression=Uncompressed");
             }
