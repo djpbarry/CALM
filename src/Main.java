@@ -1,6 +1,5 @@
 
-import CALM_.Filters.Skeleton_Branch_Finder;
-import UtilClasses.GenUtils;
+import CALM_.GIANI_.GIANI_;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -14,12 +13,16 @@ import UtilClasses.GenUtils;
 public class Main {
 
     public static void main(String[] args) {
-        (new Skeleton_Branch_Finder()).run(null);
-        try{
-//            ImagePlus[] imp = BF.openImagePlus("D:\\debugging\\mm\\Untitled_2\\Cleaned_Untitled_2_MMStack_Pos0_metadata.txt");
-        } catch (Exception e){
-            GenUtils.logError(e, "");
-        }
-        System.exit(0);
+        new GIANI_().run(null);
     }
+
+//    public static void main(String[] args) {
+//        (new Skeleton_Branch_Finder()).run(null);
+//        try{
+////            ImagePlus[] imp = BF.openImagePlus("D:\\debugging\\mm\\Untitled_2\\Cleaned_Untitled_2_MMStack_Pos0_metadata.txt");
+//        } catch (Exception e){
+//            GenUtils.logError(e, "");
+//        }
+////        System.exit(0);
+//    }
 }
