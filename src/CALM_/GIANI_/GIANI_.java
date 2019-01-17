@@ -17,7 +17,7 @@
 package CALM_.GIANI_;
 
 import ij.plugin.PlugIn;
-import ui.LocalMapperUI;
+import ui.GIANIUI;
 
 /**
  *
@@ -32,7 +32,7 @@ public class GIANI_ implements PlugIn {
     public void run(String arg) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new LocalMapperUI().setVisible(true);
+                new GIANIUI().setVisible(true);
             }
         });
     }
