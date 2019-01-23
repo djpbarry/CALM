@@ -1,5 +1,5 @@
 
-import CALM_.GIANI_.GIANI_;
+import CALM_.Tracking_.Virus_Tracker;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -13,7 +13,8 @@ import CALM_.GIANI_.GIANI_;
 public class Main {
 
     public static void main(String[] args) {
-        new GIANI_().run(null);
+        new Virus_Tracker().run(null);
+        System.exit(0);
     }
 
 //    public static void main(String[] args) {

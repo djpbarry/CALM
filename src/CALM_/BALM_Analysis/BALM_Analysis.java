@@ -31,7 +31,6 @@ import UtilClasses.Utilities;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
-import ij.plugin.RGBStackMerge;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
 import java.io.File;
