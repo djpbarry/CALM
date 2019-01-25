@@ -159,7 +159,7 @@ public class BALM_Analysis extends GPUAnalyse {
 //        if (UserVariables.isGpu()) {
 //            return cudaFindParticles(false, 0, 0, null);
 //        } else {
-            return findParticles(false, 0, 0, UserVariables.getCurveFitTol(), stacks[0], null, false, false, UserVariables.isFitC2());
+            return findParticles(0, 0, UserVariables.getCurveFitTol(), stacks[0], null, false, false, UserVariables.isFitC2());
 //        }
     }
 

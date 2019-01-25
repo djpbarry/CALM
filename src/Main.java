@@ -14,7 +14,7 @@ public class Main {
 
     public static void main(String[] args) {
         new Virus_Tracker().run(null);
-        System.exit(0);
+//        System.exit(0);
     }
 
 //    public static void main(String[] args) {
