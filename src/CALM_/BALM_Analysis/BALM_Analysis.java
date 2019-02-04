@@ -106,7 +106,7 @@ public class BALM_Analysis extends GPUAnalyse {
         for (int i = 0; i < n; i++) {
             ParticleTrajectory traj = (ParticleTrajectory) trajectories.get(i);
             if (traj != null) {
-                traj.printTrajectory(i + 1, results, numFormat, title);
+                traj.printTrajectory(i + 1, results, numFormat, title, inputs);
             }
         }
         if (trajectories.size() > 0) {
