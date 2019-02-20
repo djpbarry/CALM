@@ -31,6 +31,7 @@ import UtilClasses.Utilities;
 import ij.IJ;
 import ij.ImagePlus;
 import ij.ImageStack;
+import ij.plugin.PlugIn;
 import ij.process.ImageProcessor;
 import ij.text.TextWindow;
 import java.io.File;
@@ -41,7 +42,7 @@ import ui.DetectionGUI;
  *
  * @author Dave Barry <david.barry at crick.ac.uk>
  */
-public class BALM_Analysis extends GPUAnalyse {
+public class BALM_Analysis extends GPUAnalyse implements PlugIn {
 
     private final String RESULTS_HEADINGS = String.format("X\tY\tFrame\tChannel 1\tChannel 2\tChannel 1 %c\tChannel 2 %c", '\u03C3', '\u03C3');
 //    private final int MIN_CLUSTER_RANGE = 2, MAX_CLUSTER_RANGE = 8;
@@ -159,7 +160,7 @@ public class BALM_Analysis extends GPUAnalyse {
 //        if (UserVariables.isGpu()) {
 //            return cudaFindParticles(false, 0, 0, null);
 //        } else {
-            return findParticles(0, 0, UserVariables.getCurveFitTol(), stacks[0], null, false, UserVariables.isFitC2(), true);
+        return findParticles(0, 0, UserVariables.getCurveFitTol(), stacks[0], null, false, UserVariables.isFitC2(), true);
 //        }
     }
 
