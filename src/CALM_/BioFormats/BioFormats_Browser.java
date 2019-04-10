@@ -5,6 +5,7 @@
  */
 package CALM_.BioFormats;
 
+import ui.BioFormatsBrowserFrame;
 import ij.plugin.PlugIn;
 
 /**
