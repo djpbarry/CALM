@@ -1,5 +1,5 @@
 
-import CALM_.GIANI_.GIANI_;
+import CALM_.BioFormats.BioFormats_Browser;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -13,7 +13,8 @@ import CALM_.GIANI_.GIANI_;
 public class Main {
 
     public static void main(String[] args) {
-        new GIANI_().run(null);
+//        (new Virus_Tracker()).run(null);
+        (new BioFormats_Browser()).run(null);
 //        System.exit(0);
     }
 
