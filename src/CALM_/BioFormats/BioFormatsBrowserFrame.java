@@ -16,7 +16,8 @@ import params.DefaultParams;
  */
 public class BioFormatsBrowserFrame extends javax.swing.JFrame {
 
-    private final String TITLE = String.format("BioFormats Browser v%d.%s", Revision.VERSION, new DecimalFormat("000").format(Revision.revisionNumber));
+    private final int VERSION = 1;
+    private final String TITLE = String.format("BioFormats Browser v%d.%s", VERSION, new DecimalFormat("000").format(Revision.revisionNumber));
 
     /**
      * Creates new form BioFormatsBrowserFrame
