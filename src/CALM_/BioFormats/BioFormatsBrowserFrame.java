@@ -6,6 +6,8 @@
 package CALM_.BioFormats;
 
 import IO.BioFormats.BioFormatsImg;
+import Revision.Revision;
+import java.text.DecimalFormat;
 import params.DefaultParams;
 
 /**
@@ -13,6 +15,8 @@ import params.DefaultParams;
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
 public class BioFormatsBrowserFrame extends javax.swing.JFrame {
+
+    private final String TITLE = String.format("BioFormats Browser v%d.%s", Revision.VERSION, new DecimalFormat("000").format(Revision.revisionNumber));
 
     /**
      * Creates new form BioFormatsBrowserFrame
@@ -39,7 +43,9 @@ public class BioFormatsBrowserFrame extends javax.swing.JFrame {
                 DefaultParams.SERIES_SELECT_LABEL,
                 DefaultParams.PREVIEW_CHAN_SELECT_LABEL});
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle(TITLE);
+        setMinimumSize(new java.awt.Dimension(640, 480));
         getContentPane().setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
