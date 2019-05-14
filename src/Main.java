@@ -1,5 +1,7 @@
 
-import CALM_.BioFormats.BioFormats_Browser;
+import CALM_.GIANI_.GIANI_;
+
+
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -13,8 +15,12 @@ import CALM_.BioFormats.BioFormats_Browser;
 public class Main {
 
     public static void main(String[] args) {
-//        (new Virus_Tracker()).run(null);
-        (new BioFormats_Browser()).run(null);
+        (new GIANI_()).run(null);
+//        (new Trajectory_Analyser()).run(null);
+//        RiemannianDistanceTransform rdt = new RiemannianDistanceTransform();
+//        ImageStack greyImage = IJ.openImage().getImageStack();
+//        ImageStack maskImage = IJ.openImage().getImageStack();
+//        IJ.saveAs((rdt.run(new ImageFloat(greyImage), new ImageShort(maskImage), 2.0f, 0.0962002f, 1.3832000f)).getImagePlus(), "TIF", "D:\\debugging\\giani_debug\\rdt.tif");
 //        System.exit(0);
     }
 

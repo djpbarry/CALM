@@ -3,5 +3,8 @@
 <properties>
 <comment/>
 <entry key="PROFILING_POINTS">false</entry>
+<entry key="org.netbeans.modules.profiler.v2.features.MethodsFeature_SelectedMethodsMode_SELECTION_FLAG">IO.BioFormats.BioFormatsImg,loadPixelData,(IIILjava/lang/String;)V ij.process.ShortProcessor,setPixels,(Ljava/lang/Object;)V </entry>
 <entry key="ACTIVATED_FEATURES">#org.netbeans.modules.profiler.v2.features.MethodsFeature@</entry>
+<entry key="org.netbeans.modules.profiler.v2.features.MethodsFeature_MODE_FLAG">AllClassesMode</entry>
+<entry key="org.netbeans.modules.profiler.v2.features.MethodsFeature_SETTINGS_FLAG">true</entry>
 </properties>
