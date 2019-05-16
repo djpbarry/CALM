@@ -1,5 +1,5 @@
 
-import CALM_.GIANI_.GIANI_;
+import CALM_.GIANI_.GIANI_Results_Browser;
 
 
 
@@ -15,7 +15,7 @@ import CALM_.GIANI_.GIANI_;
 public class Main {
 
     public static void main(String[] args) {
-        (new GIANI_()).run(null);
+        (new GIANI_Results_Browser()).run(null);
 //        (new Trajectory_Analyser()).run(null);
 //        RiemannianDistanceTransform rdt = new RiemannianDistanceTransform();
 //        ImageStack greyImage = IJ.openImage().getImageStack();
