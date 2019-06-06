@@ -82,7 +82,7 @@ public class BALM_Analysis extends GPUAnalyse implements PlugIn {
     }
 
     public void analyse(File inputDir) {
-        ImageStack[] stacks = getStacks();
+        ImageStack[] stacks = getAllStacks();
         File outputDir = null;
         try {
             outputDir = Utilities.getFolder(inputDir, "Specify directory for output files...", true);
@@ -156,7 +156,7 @@ public class BALM_Analysis extends GPUAnalyse implements PlugIn {
 //        return headings;
 //    }
     protected ParticleArray findC1Particles() {
-        ImageStack[] stacks = getStacks();
+        ImageStack[] stacks = getAllStacks();
 //        if (UserVariables.isGpu()) {
 //            return cudaFindParticles(false, 0, 0, null);
 //        } else {
