@@ -1,7 +1,5 @@
 
-import CALM_.GIANI_.GIANI_;
-
-
+import CALM_.GIANI_.Giani_Macro_Extensions;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -15,7 +13,15 @@ import CALM_.GIANI_.GIANI_;
 public class Main {
 
     public static void main(String[] args) {
-        (new GIANI_()).run(null);
+//        (new GIANI_()).run(null);
+        Giani_Macro_Extensions exec = new Giani_Macro_Extensions();
+        exec.handleExtension("initialise", new String[]{"D:\\debugging\\giani_debug\\subset\\GIANI v2.037_Output\\properties.xml"});
+        exec.handleExtension("run", new String[]{});
+
+//        SkeletonPruner sp = new SkeletonPruner(100, (ByteProcessor) (IJ.openImage()).getProcessor().convertToByteProcessor());
+//
+//        IJ.saveAs(new ImagePlus("Pruned", sp.getPrunedImage()), "PNG", "D:\\OneDrive - The Francis Crick Institute\\Working Data\\Tapon\\Maxine\\Tiffs\\Pruned");
+        System.exit(0);
 //        (new Trajectory_Analyser()).run(null);
 //        RiemannianDistanceTransform rdt = new RiemannianDistanceTransform();
 //        ImageStack greyImage = IJ.openImage().getImageStack();
