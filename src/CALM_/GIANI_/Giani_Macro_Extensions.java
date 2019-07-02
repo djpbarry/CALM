@@ -6,6 +6,7 @@
 package CALM_.GIANI_;
 
 import GIANI.LocalMapperExecutor;
+import GIANI.PipelineBuilder;
 import IO.PropertyWriter;
 import Process.ProcessPipeline;
 import UtilClasses.GenUtils;
@@ -15,7 +16,7 @@ import ij.macro.Functions;
 import java.io.File;
 import java.util.Properties;
 import loci.plugins.macro.MacroFunctions;
-import ui.GIANIUI;
+import mcib3d.geom.Objects3DPopulation;
 
 /**
  *
@@ -40,20 +41,21 @@ public class Giani_Macro_Extensions extends MacroFunctions {
         return null;
     }
 
-    public void initialise(String propertyFileLocation) {
-        GIANIUI gui = new GIANIUI();
-        ProcessPipeline pipeline = gui.buildPipeline();
+    public void initialise(String propertyFileLocation, String inputDirectory) {
+        Objects3DPopulation cells = new Objects3DPopulation();
+        ProcessPipeline pipeline = PipelineBuilder.buildFullPipeline(props, cells);
         props = new GianiDefaultParams();
         try {
             PropertyWriter.loadProperties(props, null, new File(propertyFileLocation));
         } catch (Exception e) {
-            GenUtils.logError(e, "Failed to load AnaMorf properties file.");
+            GenUtils.logError(e, "Failed to load properties file.");
         }
-        gui.setOutputDirectory(props);
+        props.setProperty(GianiDefaultParams.INPUT_DIR_LABEL, inputDirectory);
+        GianiDefaultParams.setOutputDirectory(props);
         exec = new LocalMapperExecutor(pipeline, props);
     }
 
-    public void run() {
+    public void runGiani() {
         exec.run();
     }
 
