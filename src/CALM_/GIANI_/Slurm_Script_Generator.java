@@ -20,12 +20,15 @@ import IO.BioFormats.BioFormatsFileLister;
 import IO.BioFormats.BioFormatsImg;
 import UtilClasses.GenUtils;
 import UtilClasses.GenVariables;
+import UtilClasses.Utilities;
 import ij.IJ;
+import ij.plugin.PlugIn;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import loci.formats.FormatException;
 
@@ -33,17 +36,24 @@ import loci.formats.FormatException;
  *
  * @author David Barry <david.barry at crick dot ac dot uk>
  */
-public class SlurmScriptGenerator {
+public class Slurm_Script_Generator implements PlugIn {
 
     private File input;
     private String gianiJarLocation = "/home/camp/barryd/working/barryd/hpc/java/giani/GIANI_v2.042.jar";
     private String propFileLocation = "/home/camp/barryd/working/barryd/hpc/giani_test/GIANI v2.042_Output/properties.xml";
 
-    public SlurmScriptGenerator(File input) {
+    public Slurm_Script_Generator(File input) {
         this.input = input;
     }
 
-    public void generateScript() {
+    public void run(String arg) {
+        try {
+            input = Utilities.getFolder(input, "Specify input directory", false);
+            gianiJarLocation = Utilities.getFile(new File("gianiJarLocation"), "Specify location of GIANI Jar file", false).getAbsolutePath();
+            propFileLocation = Utilities.getFile(new File("propFileLocation"), "Specify location of GIANI properties file", false).getAbsolutePath();
+        } catch (InterruptedException | InvocationTargetException e) {
+            return;
+        }
         if (!input.isDirectory()) {
             IJ.log("Input is not a directory - aborting.");
             return;
