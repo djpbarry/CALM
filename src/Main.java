@@ -1,5 +1,5 @@
 
-import CALM_.GIANI_.Giani_Macro_Extensions;
+import CALM_.GIANI_.GIANI_;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -13,13 +13,13 @@ import CALM_.GIANI_.Giani_Macro_Extensions;
 public class Main {
 
     public static void main(String[] args) {
-//        (new GIANI_()).run(null);
-        Giani_Macro_Extensions exec = new Giani_Macro_Extensions();
-        exec.handleExtension("initialise", new String[]{
-            "D:\\debugging\\giani_debug\\subset\\GIANI v2.042_Output\\properties.xml",
-            "D:\\debugging\\giani_debug\\subset"
-        });
-        exec.handleExtension("runGiani", null);
+        (new GIANI_()).run(null);
+//        Giani_Macro_Extensions exec = new Giani_Macro_Extensions();
+//        exec.handleExtension("initialise", new String[]{
+//            "D:\\debugging\\giani_debug\\subset\\GIANI v2.042_Output\\properties.xml",
+//            "D:\\debugging\\giani_debug\\subset"
+//        });
+//        exec.handleExtension("runGiani", null);
 
 //        SkeletonPruner sp = new SkeletonPruner(100, (ByteProcessor) (IJ.openImage()).getProcessor().convertToByteProcessor());
 //
@@ -30,7 +30,7 @@ public class Main {
 //        ImageStack greyImage = IJ.openImage().getImageStack();
 //        ImageStack maskImage = IJ.openImage().getImageStack();
 //        IJ.saveAs((rdt.run(new ImageFloat(greyImage), new ImageShort(maskImage), 2.0f, 0.0962002f, 1.3832000f)).getImagePlus(), "TIF", "D:\\debugging\\giani_debug\\rdt.tif");
-        System.exit(0);
+//        System.exit(0);
     }
 
 //    public static void main(String[] args) {

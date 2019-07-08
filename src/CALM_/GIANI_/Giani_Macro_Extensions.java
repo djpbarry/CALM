@@ -5,7 +5,7 @@
  */
 package CALM_.GIANI_;
 
-import GIANI.LocalMapperExecutor;
+import GIANI.PipelineExecutor;
 import GIANI.PipelineBuilder;
 import IO.PropertyWriter;
 import Process.ProcessPipeline;
@@ -25,7 +25,7 @@ import mcib3d.geom.Objects3DPopulation;
 public class Giani_Macro_Extensions extends MacroFunctions {
 
     Properties props = new GianiDefaultParams();
-    private LocalMapperExecutor exec;
+    private PipelineExecutor exec;
 
     public void run(String args) {
         if (!IJ.macroRunning()) {
@@ -51,8 +51,8 @@ public class Giani_Macro_Extensions extends MacroFunctions {
             GenUtils.logError(e, "Failed to load properties file.");
         }
         props.setProperty(GianiDefaultParams.INPUT_DIR_LABEL, inputDirectory);
-        GianiDefaultParams.setOutputDirectory(props);
-        exec = new LocalMapperExecutor(pipeline, props);
+        GianiDefaultParams.setOutputDirectory(props, null);
+        exec = new PipelineExecutor(pipeline, props);
     }
 
     public void runGiani() {
