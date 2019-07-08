@@ -38,12 +38,12 @@ import loci.formats.FormatException;
  */
 public class Slurm_Script_Generator implements PlugIn {
 
-    private File input;
-    private String gianiJarLocation = "/home/camp/barryd/working/barryd/hpc/java/giani/GIANI_v2.042.jar";
-    private String propFileLocation = "/home/camp/barryd/working/barryd/hpc/giani_test/GIANI v2.042_Output/properties.xml";
+    private static File input;
+    private static String gianiJarLocation = "/home/camp/barryd/working/barryd/hpc/java/giani/GIANI_v2.042.jar";
+    private static String propFileLocation = "/home/camp/barryd/working/barryd/hpc/giani_test/GIANI v2.042_Output/properties.xml";
 
-    public Slurm_Script_Generator(File input) {
-        this.input = input;
+    public Slurm_Script_Generator() {
+
     }
 
     public void run(String arg) {
@@ -92,7 +92,7 @@ public class Slurm_Script_Generator implements PlugIn {
                 }
                 int nSeries = img.getSeriesCount();
                 for (int s = 0; s < nSeries; s++) {
-                    scriptWriter.write(String.format("srun java -jar %s %s %s %d\n", gianiJarLocation, input.getAbsolutePath(), propFileLocation, s));
+                    scriptWriter.write(String.format("srun java -jar %s %s %s %d\n", gianiJarLocation, img.getId(), propFileLocation, s));
                 }
             }
             scriptWriter.close();
