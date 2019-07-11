@@ -1,5 +1,5 @@
 
-import CALM_.GIANI_.Slurm_Script_Generator;
+import CALM_.GIANI_.GIANI_Results_Browser;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -13,7 +13,7 @@ import CALM_.GIANI_.Slurm_Script_Generator;
 public class Main {
 
     public static void main(String[] args) {
-        (new Slurm_Script_Generator()).run(null);
+        (new GIANI_Results_Browser()).run(null);
 //        Giani_Macro_Extensions exec = new Giani_Macro_Extensions();
 //        exec.handleExtension("initialise", new String[]{
 //            "D:\\debugging\\giani_debug\\subset\\GIANI v2.042_Output\\properties.xml",
