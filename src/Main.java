@@ -1,5 +1,5 @@
 
-import CALM_.GIANI_.GIANI_Results_Browser;
+import CALM_.GIANI_.GIANI_;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -13,7 +13,7 @@ import CALM_.GIANI_.GIANI_Results_Browser;
 public class Main {
 
     public static void main(String[] args) {
-        (new GIANI_Results_Browser()).run(null);
+        (new GIANI_()).run(null);
 //        Giani_Macro_Extensions exec = new Giani_Macro_Extensions();
 //        exec.handleExtension("initialise", new String[]{
 //            "D:\\debugging\\giani_debug\\subset\\GIANI v2.042_Output\\properties.xml",

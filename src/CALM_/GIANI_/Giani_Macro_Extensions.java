@@ -51,7 +51,9 @@ public class Giani_Macro_Extensions extends MacroFunctions {
             GenUtils.logError(e, "Failed to load properties file.");
         }
         props.setProperty(GianiDefaultParams.INPUT_DIR_LABEL, inputDirectory);
-        GianiDefaultParams.setOutputDirectory(props, null);
+        if (!GianiDefaultParams.setOutputDirectory(props, null)) {
+            return;
+        }
         exec = new PipelineExecutor(pipeline, props);
     }
 
