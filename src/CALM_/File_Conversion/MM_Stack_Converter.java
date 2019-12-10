@@ -47,7 +47,7 @@ public class MM_Stack_Converter implements PlugIn {
             for (int s = 0; s < Ns; s++) {
                 IJ.log(String.format("Reading %s series %d", fileList[i].getName(), s));
                 img.loadPixelData(s);
-                ImagePlus imp = HyperStackConverter.toHyperStack(img.getLoadedImage(), img.getSizeC(), img.getSizeZ(), 1, "xyzct", "composite");
+                ImagePlus imp = HyperStackConverter.toHyperStack(img.getLoadedImage(), img.getSizeC(img.getCurrentSeries()), img.getSizeZ(img.getCurrentSeries()), 1, "xyzct", "composite");
                 IJ.log(String.format("Writing %s series %d", fileList[i].getName(), s));
                 IJ.run(imp, "Bio-Formats Exporter", "save=" + String.format("%s%s%s_S%d.ome.tif", outputDir, File.separator, fileList[i].getName(), s) + " compression=Uncompressed");
             }
