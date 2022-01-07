@@ -23,4 +23,6 @@ jobs:
         distribution: 'adopt'
         cache: maven
     - name: Build with Maven
+      env:
+        PAT: ${{ secrets.PAT }}
       run: mvn --batch-mode --update-snapshots -Dinternal.repo.password="$PAT" --settings mvn_settings.xml verify
