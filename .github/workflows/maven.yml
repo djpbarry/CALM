@@ -3,15 +3,10 @@
 
 name: Java CI with Maven
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,7 +16,6 @@ jobs:
       with:
         java-version: '11'
         distribution: 'adopt'
-        cache: maven
     - name: Build with Maven
       env:
         PAT: ${{ secrets.PAT }}
