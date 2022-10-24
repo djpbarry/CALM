@@ -7,6 +7,7 @@ package net.calm.calm;
  */
 
 import net.calm.calm.GIANI_.GIANI_;
+import net.calm.calm.Tracking_.Virus_Tracker;
 
 /**
  *
@@ -15,7 +16,8 @@ import net.calm.calm.GIANI_.GIANI_;
 public class Main {
 
     public static void main(String[] args) {
-        (new GIANI_()).run(null);
+        //(new GIANI_()).run(null);
+        (new Virus_Tracker()).run(null);
 //        Giani_Macro_Extensions exec = new Giani_Macro_Extensions();
 //        exec.handleExtension("initialise", new String[]{
 //            "D:\\debugging\\giani_debug\\subset\\GIANI v2.042_Output\\properties.xml",
